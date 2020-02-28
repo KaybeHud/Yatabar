@@ -1,0 +1,29 @@
+## Author: Kaybe
+## DefaultState: enabled
+## Interface: 11303
+## Notes: Shaman totem bar
+## Notes-deDE: Schamane Totembar
+## Dependencies: Ace3
+## OptionalDeps: Masque
+## SavedVariables: YatabarDB
+## Title: Yet another Totem addon bar |cff7fff7f -Ace3-|r
+## Version: 4.7.5
+## X-Compatible-With: 40200
+## X-Embeds: Ace3, LibSharedMedia-3.0, LibKeyBound-1.0, LibBars-1.0
+## X-LoadOn-Class: SHAMAN
+## X-Curse-Project-Name: Yatabar
+
+embeds.xml
+Libs\LibDataBroker-1.1.lua
+Localization\enUS.lua
+Localization\deDE.lua
+Yatabar.lua
+Core.lua
+TotemBar.lua
+Options.lua
+TotemButton.lua
+Header.lua
+TotemData.lua
+Timer.lua
+TotemSets.lua
+TotemButtonLayoutEditor.lua
