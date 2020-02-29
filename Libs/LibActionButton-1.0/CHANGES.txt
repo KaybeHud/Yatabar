@@ -1,0 +1,24 @@
+tag 7550c95dda4556d7da70ba892b60562476cc78d5 0.35
+Author:	Hendrik Leppkes <h.leppkes@gmail.com>
+Date:	Mon Jan 27 14:00:05 2020 +0100
+
+Tag as 0.35
+
+commit aea78fa56cf119d1ac049a7fc99f61ab92186cb5
+Author: Hendrik Leppkes <h.leppkes@gmail.com>
+Date:   Mon Jan 27 13:59:12 2020 +0100
+
+    Disable Loss-of-Control on Classic, to match default Blizzard behavior
+
+commit 9ff29c6ec6ccb1529e1ea9a935700c96c4df5676
+Author: Hendrik Leppkes <h.leppkes@gmail.com>
+Date:   Mon Jan 27 13:58:56 2020 +0100
+
+    Implement Loss-of-Control cooldowns for spell buttons
+
+commit d0e79a6b2fd4f230f213627170e7cd08988a4014
+Author: Hendrik Leppkes <h.leppkes@gmail.com>
+Date:   Mon Jan 27 13:55:28 2020 +0100
+
+    Update TOC for 8.3
+
