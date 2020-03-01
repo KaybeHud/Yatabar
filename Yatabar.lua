@@ -43,39 +43,54 @@ end
 function Yatabar:OnEnable()
 	-- Create a Header to drive this
 	Yatabar.frame = CreateFrame("Frame", "LABTestHeader", UIParent, "SecureHandlerStateTemplate")
-RegisterStateDriver(Yatabar.frame, "page", "[mod:alt]2;1")
-Yatabar.frame:SetAttribute("_onstate-page", [[
-    self:SetAttribute("state", newstate)
-    control:ChildUpdate("state", newstate)
-]])
+	--Yatabar.frame:SetPoint("CENTER")
+	
+	--RegisterStateDriver(Yatabar.frame, "page", "[mod:alt]2;1")
+	
+	-- Yatabar.frame:SetAttribute("_onstate-page", [[
+	-- self:SetAttribute("state", newstate)
+	-- control:ChildUpdate("state", newstate)
+	-- print(newstate)
+	-- ]])
+	--Yatabar.frame:Show()
+	--Yatabar.frame:SetAttribute("statehidden", nil)
 
 -- Create a button on the header
-Yatabar.button = LibStub("LibActionButton-1.0"):CreateButton(2, "LABTest1", Yatabar.frame)
-Yatabar.button:SetPoint("CENTER", UIParent,"CENTER",230,530)
+Yatabar.button = LibStub("LibActionButton-1.0"):CreateButton(1, "LABTest1", Yatabar.frame)
+Yatabar.button:ClearAllPoints()
+Yatabar.button:SetPoint("CENTER", UIParent,"CENTER",-100,0)
 
-	Yatabar.button:SetBackdrop({
-		bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
-		tile = true,
-		tileSize = 1,
-		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-		edgeSize = 0,
-		insets = {left = 0, right = 0, top = 0, bottom = 0}
-	})
-	Yatabar.button:SetBackdropColor(1, 1, 0, 1)
-	Yatabar.button:SetBackdropBorderColor(0.5, 0.5, 0, 0)
-	local texture = GetActionTexture(Yatabar.button.id);
-print(Yatabar.button.id)
+	-- Yatabar.button:SetBackdrop({
+	-- 	bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
+	-- 	tile = true,
+	-- 	tileSize = 1,
+	-- 	edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+	-- 	edgeSize = 0,
+	-- 	insets = {left = 0, right = 0, top = 0, bottom = 0}
+	-- })
+	-- Yatabar.button:SetBackdropColor(1, 1, 0, 1)
+	-- Yatabar.button:SetBackdropBorderColor(0.5, 0.5, 0, 0)
+	-- local texture = GetActionTexture(Yatabar.button.id);
 
-	if ( texture ) then
-		Yatabar.button.icon:SetTexture(texture);
-		Yatabar.button.icon:Show();
-	end
+	-- print(Yatabar.button.id)
+
+	-- if ( texture ) then
+	-- 	Yatabar.button.icon:SetTexture(texture);
+	-- 	--Yatabar.button.texture:SetAllPoints(Yatabar.frame)
+	-- 	Yatabar.button.icon:Show();
+	-- end
 	
 	Yatabar.button:SetMovable(true)
 	Yatabar.button:SetClampedToScreen(true)
-Yatabar.button:SetState(1, "action", 1)
-Yatabar.button:SetState(2, "action", 2)
+	Yatabar.button:SetState(1, "action", 1)
+	--Yatabar.button:SetState(2, "action", 2)
+
 print("Enabled")
 print(Yatabar.button:GetHeight())
 Yatabar.button:Show()
+--Yatabar.button:SetAttribute("statehidden", nil)
+end
+
+function Yatabar:CreateButtons()
+
 end
