@@ -91,20 +91,12 @@ function Yatabar:CreateMainButtons()
 		print("Mainbutton:"..i)
 		local name = "YatabarButton"..i
 		Yatabar.bar["button"..i] = LAB:CreateButton(i, name , Yatabar.bar)
-		
-		--Yatabar.bar["button"..i]:ClearAllPoints()
 		Yatabar.bar["button"..i]:SetPoint("TOPLEFT", Yatabar.bar,"TOPLEFT", (i-1) * Yatabar.buttonSize,0)
 		--Yatabar.bar["button"..i]:SetAttribute('type', 'action')
 		--Yatabar.bar["button"..i]:SetAttribute('action', i)
 
 		Yatabar.bar["button"..i]:SetAttribute('state', 1)
 		Yatabar.bar["button"..i]:SetState(1, "action", i)
-
-		-- Yatabar.bar["button"..i].icon = _G[name .. "Icon"];
-		-- Yatabar.bar["button"..i].icon:SetTexCoord(0.06, 0.94, 0.06, 0.94);
-
-		-- Yatabar.bar["button"..i].normalTexture = _G[name .. "NormalTexture"];
-		-- Yatabar.bar["button"..i].normalTexture:SetVertexColor(1, 1, 1, 0.5);
 
 		--Yatabar.bar["button"..i]:SetState(2, "state", i)
 		--Yatabar.bar["button"..i]:SetAttribute("statehidden", true)
@@ -119,7 +111,7 @@ function Yatabar:CreatePopupButtons(main)
 	local name = "YatabarButton"..id
 	main["popupButton"..id] = LAB:CreateButton(id, name , Yatabar.bar)
 	print(id - 1 - self.totemCount)
-	main["popupButton"..id]:SetPoint("BOTTOMLEFT", main,"TOPLEFT", (id - 1 - self.totemCount) * Yatabar.buttonSize,0)
+	main["popupButton"..id]:SetPoint("BOTTOMLEFT", main,"TOPLEFT", 0,0) --(id - 1 - self.totemCount) * Yatabar.buttonSize
 	main["popupButton"..id]:SetAttribute('state', 1)
 	main["popupButton"..id]:SetState(1, "action", id)
 end
