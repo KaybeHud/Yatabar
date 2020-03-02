@@ -2,14 +2,14 @@
 ## DefaultState: enabled
 ## Interface: 11303
 ## Notes: Shaman totem bar
-## Notes-deDE: Schamane Totembar
-## Dependencies: Ace3, LibActionButton-1.0
+## Notes-deDE: Totembar
+## Dependencies: Ace3, LibActionButton-1.0, !LibTotemInfo
 ## OptionalDeps: Masque
 ## SavedVariables: YatabarDB
 ## Title: Yet another Totem addon bar
 ## Version: 4.7.5
-## X-Compatible-With: 40200
-## X-Embeds: Ace3, LibBars-1.0
+## X-Compatible-With: 11303
+## X-Embeds: Ace3, 
 ## X-LoadOn-Class: SHAMAN
 ## X-Curse-Project-Name: Yatabar
 
