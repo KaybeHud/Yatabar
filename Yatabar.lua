@@ -45,7 +45,8 @@ function Yatabar:OnInitialize()
 end
 
 function Yatabar:OnEnable()
-	self:CreateBar()
+	self:CreateBar(Yatabar.totemCount)
+	self:CreateTotemHeader(Yatabar.totemCount)
 	self:CreateMainButtons()
 	--RegisterStateDriver(Yatabar.frame, "page", "[mod:alt]2;1")
 	
@@ -59,13 +60,23 @@ function Yatabar:OnEnable()
 	print("Enabled")
 end
 
-function Yatabar:CreateBar()
+function Yatabar:CreateTotemHeader(count)
+	print("CreateTotemHeader")
+	for i=1, count do
+		Yatabar["TotemHeader"..i] = CreateFrame("Frame", "TotemHeader"..i, Yatabar.bar, "SecureHandlerStateTemplate")
+		Yatabar["TotemHeader"..i]:SetPoint("TOPLEFT", Yatabar.bar,"TOPLEFT",(i-1) * Yatabar.buttonSize,0)
+		local totemSpellCount = 2
+		self:CreatePopupButtons(Yatabar["TotemHeader"..i], totemSpellCount)
+	end
+end
+
+function Yatabar:CreateBar(count)
 	print("CreateBar") 
-	Yatabar.bar = CreateFrame("Frame", "YatabarBar", UIParent, "SecureHandlerStateTemplate")
+	Yatabar.bar = CreateFrame("Frame", "YatabarBar", UIParent)
 	Yatabar.bar:SetPoint("CENTER")
 
-	Yatabar.bar:SetWidth(36);
-	Yatabar.bar:SetHeight(36);
+	Yatabar.bar:SetWidth(self.buttonSize * count + 10);
+	Yatabar.bar:SetHeight(self.buttonSize + 5);
 	--Um die Bar zu sehen:
 	Yatabar.bar:SetBackdrop({
 		bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
@@ -112,7 +123,7 @@ function Yatabar:CreateMainButtons()
 	 end 
 end
 
-function Yatabar:CreatePopupButtons(main)
+function Yatabar:CreatePopupButtons(main, spellCount)
 	local id = main.id + self.totemCount
 	print("mainID:"..main.id)
 	print("Popupid:"..id)
