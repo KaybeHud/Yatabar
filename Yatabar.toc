@@ -16,5 +16,6 @@
 embeds.xml
 Localization\enUS.lua
 Localization\deDE.lua
+TotemData.lua
 Yatabar.lua
 
