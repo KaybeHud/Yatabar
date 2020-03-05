@@ -10,8 +10,10 @@ Yatabar.name = "Yatabar"
 Yatabar.frameBorder = 8
 Yatabar.availableTotems = {}
 Yatabar.countAvailableTotemspells = 0
+Yatabar.isLocked = true
 local _G = getfenv(0)
 --local L = LibStub("AceLocale-3.0"):GetLocale(name)
+local GetTotemInfo = LibStub("LibTotemInfo-1.0").GetTotemInfo
 
 --LDB
 local ldb = LibStub:GetLibrary("LibDataBroker-1.1"):NewDataObject(Yatabar.name, {
@@ -19,12 +21,11 @@ local ldb = LibStub:GetLibrary("LibDataBroker-1.1"):NewDataObject(Yatabar.name, 
     icon = "Interface\\Icons\\inv_banner_01",
     OnClick = function(self, button)
 		if (button == "RightButton") then
-			--for idx, bar in pairs(Klappa2.bars) do
-			--	bar:ToggleLock()
-			--end
-			print("Rechtsklick:noch keine Funktion")
+			Yatabar.isLocked = !Yatabar.isLocked
+			Yatabar:toggleLock(Yatabar.isLocked)
+			--print("Rechtsklick:noch keine Funktion")
 
-			local GetTotemInfo = LibStub("LibTotemInfo-1.0").GetTotemInfo
+		--test GetTotemInfo test
 	for i =1, 4 do 
 		print(GetTotemInfo(i)) 
 		print(GetTotemTimeLeft(i)) 
@@ -64,7 +65,6 @@ function Yatabar:OnEnable()
 	-- Yatabar.frame:SetAttribute("_onstate-page", [[
 	-- self:SetAttribute("state", newstate)
 	-- control:ChildUpdate("state", newstate)
-	-- print(newstate)
 	-- ]])
 	--Yatabar.frame:Show()
 	--Yatabar.frame:SetAttribute("statehidden", nil)
@@ -95,6 +95,9 @@ function Yatabar:CreateBar(count)
 		edgeSize = 0,
 		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
+
+	Yatabar.bar:SetMovable(true);
+
 	Yatabar.bar.overlay:SetBackdropColor(1, 1, 1, 1)
 	Yatabar.bar.overlay:SetBackdropBorderColor(0.5, 0.5, 0, 0)
 	Yatabar.bar.overlay:Hide()
@@ -103,7 +106,7 @@ function Yatabar:CreateBar(count)
 end
 
 function Yatabar:CreateTotemHeader(count)
-	print("CreateTotemHeader")
+	--print("CreateTotemHeader")
 	local frameBorder = Yatabar.frameBorder 
 	local totemSpellCount = 2
 	for i=1, count do
@@ -114,14 +117,11 @@ function Yatabar:CreateTotemHeader(count)
 		Yatabar["TotemHeader"..i]:Show()
 		index = 1
 		for idx = 1, Yatabar.countAvailableTotemspells do
-			
-			
 				if Yatabar.availableTotems[idx]["ElementID"] == i then
 					--self:CreatePopupButtons(Yatabar["TotemHeader"..i],totemSpellCount, count)
 					self:CreatePopupButtonsSpell2(Yatabar["TotemHeader"..i], index, Yatabar.availableTotems[idx]["SpellId"])
 					index = index + 1
-				end
-			
+				end	
 		end
 
 		Yatabar["TotemHeader"..i]:Execute ( [[show = [=[
@@ -228,6 +228,18 @@ function Yatabar:CreatePopupButtonsSpell(main)
 	print(spellId)
 end
 
+function Yatabar:hasSpell(spellId)
+	spellname, rank, icon, castTime, minRange, maxRange, spellId = GetSpellInfo(spellId)
+		--welche Totems sind dem Spieler bekannt:
+	spellname, rank, icon, castTime, minRange, maxRange, spellId = GetSpellInfo(spellname)
+	if spellname ~= nil then
+		return true
+	else
+		return false
+	end
+
+end
+
 function Yatabar:GetTotemSpells()
 	countSpells = 1
 	for idx, totem in pairs(YatabarConfig.allTotems) do
@@ -242,4 +254,20 @@ function Yatabar:GetTotemSpells()
 	end
 	Yatabar.countAvailableTotemspells = countSpells-1
 	print("Anzahl Spells", Yatabar.countAvailableTotemspells)
+end
+
+function Yatabar:toggleLock(lock)
+	if InCombatLockdown() then
+		print("function not available during combat")
+		return
+	end
+	if not lock then
+		Yatabar.bar.overlay:SetScript("OnDragStart", function() self:StartDrag(); end);
+		Yatabar.bar.overlay:SetScript("OnDragStop", function() self:StopDrag(); end);
+		Yatabar.bar.overlay:Show();
+	else
+		Yatabar.bar.overlay:SetScript("OnDragStart", nil);
+		Yatabar.bar.overlay:SetScript("OnDragStop", nil);
+		Yatabar.bar.overlay:Hide();
+	end
 end
