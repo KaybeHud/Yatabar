@@ -11,7 +11,7 @@ Yatabar.frameBorder = 8
 Yatabar.availableTotems = {}
 Yatabar.countAvailableTotemspells = 0
 Yatabar.isLocked = true
-Yatabar.orderElements = {"EARTH", "WATER", "FIRE", "AIR"}
+Yatabar.orderElements = {["EARTH"] = 1, ["WATER"] = 3, ["FIRE"] = 2, ["AIR"] = 4}
 local _G = getfenv(0)
 --local L = LibStub("AceLocale-3.0"):GetLocale(name)
 local GetTotemInfo = LibStub("LibTotemInfo-1.0").GetTotemInfo
@@ -58,8 +58,11 @@ end
 
 function Yatabar:OnEnable()
 	self:CreateBar(Yatabar.totemCount)
-	self:GetTotemSpells()
-	self:CreateTotemHeader(Yatabar.totemCount)
+	--self:GetTotemSpells()
+	self:GetTotemSpellsByElement()
+	for element, spell in pairs(Yatabar.availableTotems) do
+		self:CreateTotemHeader(element)
+	end
 	--self:CreateMainButtons()
 
 	--RegisterStateDriver(Yatabar.frame, "page", "[mod:alt]2;1")
@@ -75,7 +78,7 @@ function Yatabar:OnEnable()
 	self.testframe:SetPoint("TOPLEFT", Yatabar.bar,"TOPLEFT",0,-150)
 	self.testframe:Show()
 	--self:CreatePopupButtonsSpell(self.testframe)
-	
+	Yatabar:HidePopups()
 	print("Enabled")
 end
 
@@ -108,38 +111,36 @@ function Yatabar:CreateBar(count)
 	Yatabar.bar:Show()
 end
 
-function Yatabar:CreateTotemHeader(count)
+function Yatabar:CreateTotemHeader(element)
 	--print("CreateTotemHeader")
 	local frameBorder = Yatabar.frameBorder 
-	for i=1, count do
-		print("create header")
-		Yatabar["TotemHeader"..i] = CreateFrame("Frame", "TotemHeader"..i, Yatabar.bar, "SecureHandlerStateTemplate")
-		Yatabar["TotemHeader"..i]:SetPoint("BOTTOMLEFT", Yatabar.bar,"BOTTOMLEFT",(i-1) * Yatabar.buttonSize + frameBorder, frameBorder)
-		Yatabar["TotemHeader"..i]:SetSize(Yatabar.buttonSize, Yatabar.buttonSize * count)
+	print("create header")
+	Yatabar["TotemHeader"..element] = CreateFrame("Frame", "TotemHeader"..element, Yatabar.bar, "SecureHandlerStateTemplate")
+	Yatabar["TotemHeader"..element]:SetPoint("BOTTOMLEFT", Yatabar.bar,"BOTTOMLEFT",(self.orderElements[element]-1) * Yatabar.buttonSize + frameBorder, frameBorder)
+	Yatabar["TotemHeader"..element]:SetSize(Yatabar.buttonSize, Yatabar.buttonSize * self.availableTotems[element].count)
 
-		-- Yatabar["TotemHeader"..i]:SetBackdrop({
-		-- 	bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
-		-- 	tile = true,
-		-- 	tileSize = 1,
-		-- 	edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-		-- 	edgeSize = 0,
-		-- 	insets = {left = 0, right = 0, top = 0, bottom = 0}
-		-- })
+	-- Yatabar["TotemHeader"..element]:SetBackdrop({
+	-- 	bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
+	-- 		tile = true,
+	-- 		tileSize = 1,
+	-- 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+	-- 		edgeSize = 0,
+	-- 		insets = {left = 0, right = 0, top = 0, bottom = 0}
+	-- })
 	
-		-- Yatabar["TotemHeader"..i]:SetBackdropColor(0, 1, 1, 1)
-		-- Yatabar["TotemHeader"..i]:SetBackdropBorderColor(0.5, 0.5, 0, 0)
+	-- Yatabar["TotemHeader"..element]:SetBackdropColor(0, 1, 1, 1)
+	-- Yatabar["TotemHeader"..element]:SetBackdropBorderColor(0.5, 0.5, 0, 0)
 
-		Yatabar["TotemHeader"..i]:Show()
-		index = 1
-		for idx = 1, Yatabar.countAvailableTotemspells do
-				if Yatabar.availableTotems[idx]["ElementID"] == i then
-					--self:CreatePopupButtons(Yatabar["TotemHeader"..i],totemSpellCount, count)
-					self:CreatePopupButtonsSpell2(Yatabar["TotemHeader"..i], index, Yatabar.availableTotems[idx]["SpellId"])
-					index = index + 1
-				end	
+	Yatabar["TotemHeader"..element]:Show()
+
+	for idx, spellId in ipairs(self.availableTotems[element]) do
+		--self:CreatePopupButtons(Yatabar["TotemHeader"..i],totemSpellCount, count)
+		if type(spellId) == "number" then
+			self:CreatePopupButtonsSpell2(Yatabar["TotemHeader"..element], idx, spellId)
 		end
+	end
 
-		Yatabar["TotemHeader"..i]:Execute ( [[show = [=[
+		Yatabar["TotemHeader"..element]:Execute ( [[show = [=[
 			local popups = newtable(self:GetChildren())
 			for i, button in ipairs(popups) do
 				isDel = button:GetAttribute("deleted")
@@ -149,7 +150,7 @@ function Yatabar:CreateTotemHeader(count)
 			end
 		]=] ]])
 
-		Yatabar["TotemHeader"..i]:Execute( [[close = [=[
+		Yatabar["TotemHeader"..element]:Execute( [[close = [=[
 		local popups = newtable(self:GetChildren())
 			for i, button in ipairs(popups) do
 				if not (i == 1) then
@@ -157,7 +158,6 @@ function Yatabar:CreateTotemHeader(count)
 				end
 			end
 		]=] ]])
-	end
 end
 
 -- [[function Yatabar:CreateMainButtons()
@@ -220,6 +220,10 @@ function Yatabar:CreatePopupButtonsSpell2(main,index, spellId)
 	SecureHandlerWrapScript(main["popupButton"..spellId],"OnEnter",main, [[
 		control:Run(show);
 		]]);
+
+	-- if index not 1 then
+	-- 	main["popupButton"..spellId]:Hide()
+	-- end
 end
 
 function Yatabar:CreatePopupButtonsSpell(main)
@@ -281,7 +285,7 @@ function Yatabar:GetTotemSpellsByElement()
 			spellname, rank, icon, castTime, minRange, maxRange, spellId = GetSpellInfo(spellname)
 			--print(spellname)
 			if spellname ~= nil then
-				Yatabar.availableTotems[element][idx] = {["SpellName"] = spellname, ["SpellId"] = spellId, ["ElementID"] = totem["ElementID"]}
+				table.insert(Yatabar.availableTotems[element],spellId)
 				countSpells = countSpells +1
 			end
 		end
@@ -315,4 +319,20 @@ end
 function Yatabar:StopDrag()
 	Yatabar.bar:StopMovingOrSizing();
 	--self:SavePosition();
+end
+
+function Yatabar:ShowPopups()
+	for element, idx in pairs(Yatabar.orderElements) do
+		Yatabar["TotemHeader"..element]:Execute([[
+			control:Run(show)
+			]])
+	end
+end
+
+function Yatabar:HidePopups()
+	for element, idx in pairs(Yatabar.orderElements) do
+		Yatabar["TotemHeader"..element]:Execute([[
+			control:Run(close)
+			]])
+	end
 end
