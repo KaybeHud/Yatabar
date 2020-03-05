@@ -1,4 +1,4 @@
-local L = LibStub("AceLocale-3.0"):NewLocale("Klappa2","enUS",true)
+local L = LibStub("AceLocale-3.0"):NewLocale("Yatabar","enUS",true)
 if not L then return end
 
 	L["Hide mainbar"] = true 	
@@ -13,7 +13,7 @@ if not L then return end
 	L["Tooltip configuration"] = true 
 	L["Show Tooltip"] = true 
 	L["Out of combat only"] = true 
-	L["Klappa2 configuration"] = true 
+	L["Yatabar configuration"] = true 
 	L["Popup Button Scale"] = true 
 	L["Scale the popup buttons"] = true 
 	L["Button Style"] = true 
