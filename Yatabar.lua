@@ -11,6 +11,7 @@ Yatabar.frameBorder = 8
 Yatabar.availableTotems = {}
 Yatabar.countAvailableTotemspells = 0
 Yatabar.isLocked = true
+Yatabar.orderElements = {"EARTH", "WATER", "FIRE", "AIR"}
 local _G = getfenv(0)
 --local L = LibStub("AceLocale-3.0"):GetLocale(name)
 local GetTotemInfo = LibStub("LibTotemInfo-1.0").GetTotemInfo
@@ -21,16 +22,17 @@ local ldb = LibStub:GetLibrary("LibDataBroker-1.1"):NewDataObject(Yatabar.name, 
     icon = "Interface\\Icons\\inv_banner_01",
     OnClick = function(self, button)
 		if (button == "RightButton") then
-			Yatabar.isLocked = !Yatabar.isLocked
+			Yatabar.isLocked = not Yatabar.isLocked
 			Yatabar:toggleLock(Yatabar.isLocked)
 			--print("Rechtsklick:noch keine Funktion")
 
 		--test GetTotemInfo test
-	for i =1, 4 do 
-		print(GetTotemInfo(i)) 
-		print(GetTotemTimeLeft(i)) 
-	end
+	-- for i =1, 4 do 
+	-- 	print(GetTotemInfo(i)) 
+	-- 	print(GetTotemTimeLeft(i)) 
+	-- end
 		else
+			Yatabar:GetTotemSpellsByElement()
 			print("Linksklick, noch keine Funktion")
 			--LibStub("AceConfigDialog-3.0"):Open(name)
 		end
@@ -84,8 +86,10 @@ function Yatabar:CreateBar(count)
 
 	Yatabar.bar:SetWidth(self.buttonSize * count + (2*self.frameBorder));
 	Yatabar.bar:SetHeight(self.buttonSize + (2*self.frameBorder));
+	Yatabar.bar:SetMovable(true);
+	Yatabar.bar:SetClampedToScreen(true);
 	
-	Yatabar.bar.overlay = CreateFrame("Frame", "YatabarBar", Yatabar.bar)
+	Yatabar.bar.overlay = CreateFrame("Frame", "YatabarBarOverlay", Yatabar.bar)
 	Yatabar.bar.overlay:SetAllPoints()
 	Yatabar.bar.overlay:SetBackdrop({
 		bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
@@ -95,11 +99,10 @@ function Yatabar:CreateBar(count)
 		edgeSize = 0,
 		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
-
-	Yatabar.bar:SetMovable(true);
-
 	Yatabar.bar.overlay:SetBackdropColor(1, 1, 1, 1)
 	Yatabar.bar.overlay:SetBackdropBorderColor(0.5, 0.5, 0, 0)
+	Yatabar.bar.overlay:EnableMouse(true)
+	Yatabar.bar.overlay:RegisterForDrag("LeftButton")
 	Yatabar.bar.overlay:Hide()
 	
 	Yatabar.bar:Show()
@@ -108,12 +111,24 @@ end
 function Yatabar:CreateTotemHeader(count)
 	--print("CreateTotemHeader")
 	local frameBorder = Yatabar.frameBorder 
-	local totemSpellCount = 2
 	for i=1, count do
-		print("crete header")
+		print("create header")
 		Yatabar["TotemHeader"..i] = CreateFrame("Frame", "TotemHeader"..i, Yatabar.bar, "SecureHandlerStateTemplate")
-		Yatabar["TotemHeader"..i]:SetPoint("TOPLEFT", Yatabar.bar,"TOPLEFT",(i-1) * Yatabar.buttonSize + frameBorder,-frameBorder)
-		Yatabar["TotemHeader"..i]:SetSize(Yatabar.buttonSize, Yatabar.buttonSize* totemSpellCount)
+		Yatabar["TotemHeader"..i]:SetPoint("BOTTOMLEFT", Yatabar.bar,"BOTTOMLEFT",(i-1) * Yatabar.buttonSize + frameBorder, frameBorder)
+		Yatabar["TotemHeader"..i]:SetSize(Yatabar.buttonSize, Yatabar.buttonSize * count)
+
+		-- Yatabar["TotemHeader"..i]:SetBackdrop({
+		-- 	bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
+		-- 	tile = true,
+		-- 	tileSize = 1,
+		-- 	edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+		-- 	edgeSize = 0,
+		-- 	insets = {left = 0, right = 0, top = 0, bottom = 0}
+		-- })
+	
+		-- Yatabar["TotemHeader"..i]:SetBackdropColor(0, 1, 1, 1)
+		-- Yatabar["TotemHeader"..i]:SetBackdropBorderColor(0.5, 0.5, 0, 0)
+
 		Yatabar["TotemHeader"..i]:Show()
 		index = 1
 		for idx = 1, Yatabar.countAvailableTotemspells do
@@ -172,7 +187,7 @@ function Yatabar:CreatePopupButtons(main, spellCount, id)
 	local name = "YatabarButton"..id
 	main["popupButton"..id] = LAB:CreateButton(id, name , main)
 	print(id - spellCount) --self.totemCount)
-	main["popupButton"..id]:SetPoint("BOTTOMLEFT", main,"TOPLEFT", 0,(id - spellCount - 1) * Yatabar.buttonSize) --(id - 1 - self.totemCount) * Yatabar.buttonSize
+	main["popupButton"..id]:SetPoint("BOTTOMLEFT", main,"BOTTOMLEFT", 0,(id - spellCount - 1) * Yatabar.buttonSize) --(id - 1 - self.totemCount) * Yatabar.buttonSize
 	main["popupButton"..id]:SetAttribute('state', 1)
 	main["popupButton"..id]:SetState(1, "action", id)
 	SecureHandlerWrapScript(main["popupButton"..id],"OnLeave",main,[[return true, ""]], [[
@@ -191,8 +206,8 @@ function Yatabar:CreatePopupButtonsSpell2(main,index, spellId)
 	--print("PopupSpellid:"..spellId)
 	local name = "YatabarButton"..spellId
 	main["popupButton"..spellId] = LAB:CreateButton(spellId, name , main)
-	--print(index) --self.totemCount)
-	main["popupButton"..spellId]:SetPoint("BOTTOMLEFT", main,"TOPLEFT", 0,(index - 1) * Yatabar.buttonSize) --(index - 1 - self.totemCount) * Yatabar.buttonSize
+	print(index) --self.totemCount)
+	main["popupButton"..spellId]:SetPoint("BOTTOMLEFT", main,"BOTTOMLEFT", 0,(index - 1) * Yatabar.buttonSize) --(index - 1 - self.totemCount) * Yatabar.buttonSize
 	main["popupButton"..spellId]:SetAttribute('state', "spell1")
 	main["popupButton"..spellId]:SetState("spell1", "spell", spellId)
 	SecureHandlerWrapScript(main["popupButton"..spellId],"OnLeave",main,[[return true, ""]], [[
@@ -256,18 +271,48 @@ function Yatabar:GetTotemSpells()
 	print("Anzahl Spells", Yatabar.countAvailableTotemspells)
 end
 
+function Yatabar:GetTotemSpellsByElement()
+	countSpells = 0
+	for element, totem in pairs(YatabarConfig.totems) do
+		Yatabar.availableTotems[element] = {}
+		for idx, spell in pairs(totem) do
+			spellname, rank, icon, castTime, minRange, maxRange, spellId = GetSpellInfo(spell["id"])
+			--welche Totems sind dem Spieler bekannt:
+			spellname, rank, icon, castTime, minRange, maxRange, spellId = GetSpellInfo(spellname)
+			--print(spellname)
+			if spellname ~= nil then
+				Yatabar.availableTotems[element][idx] = {["SpellName"] = spellname, ["SpellId"] = spellId, ["ElementID"] = totem["ElementID"]}
+				countSpells = countSpells +1
+			end
+		end
+		Yatabar.availableTotems[element].count = countSpells
+		print(element)
+		print(Yatabar.availableTotems[element].count)
+		countSpells = 0
+	end
+end
+
 function Yatabar:toggleLock(lock)
 	if InCombatLockdown() then
 		print("function not available during combat")
 		return
 	end
 	if not lock then
-		Yatabar.bar.overlay:SetScript("OnDragStart", function() self:StartDrag(); end);
-		Yatabar.bar.overlay:SetScript("OnDragStop", function() self:StopDrag(); end);
+		Yatabar.bar.overlay:SetScript("OnDragStart", function() Yatabar:StartDrag(); end);
+		Yatabar.bar.overlay:SetScript("OnDragStop", function() Yatabar:StopDrag(); end);
 		Yatabar.bar.overlay:Show();
 	else
 		Yatabar.bar.overlay:SetScript("OnDragStart", nil);
 		Yatabar.bar.overlay:SetScript("OnDragStop", nil);
 		Yatabar.bar.overlay:Hide();
 	end
+end
+
+function Yatabar:StartDrag()
+	Yatabar.bar:StartMoving();
+end
+
+function Yatabar:StopDrag()
+	Yatabar.bar:StopMovingOrSizing();
+	--self:SavePosition();
 end
