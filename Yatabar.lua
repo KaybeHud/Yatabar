@@ -9,9 +9,8 @@ Yatabar.buttonSize = 36
 Yatabar.name = "Yatabar"
 Yatabar.frameBorder = 8
 Yatabar.availableTotems = {}
-Yatabar.countAvailableTotemspells = 0
 Yatabar.isLocked = true
-Yatabar.orderElements = {["EARTH"] = 1, ["WATER"] = 2, ["FIRE"] = 3, ["AIR"] = 4}
+Yatabar.orderElements = {}
 Yatabar.orderTotemsInElement = {["EARTH"] = {}, ["WATER"] = {}, ["FIRE"] = {}, ["AIR"] = {}}
 local _G = getfenv(0)
 local L = LibStub("AceLocale-3.0"):GetLocale(Yatabar.name, true)
@@ -52,13 +51,68 @@ local ldb = LibStub:GetLibrary("LibDataBroker-1.1"):NewDataObject(Yatabar.name, 
 local defaults = 
 {
 	char = {
-		orderElements = {["EARTH"] = 1, ["WATER"] = 3, ["FIRE"] = 2, ["AIR"] = 4},
+		orderElements = {["EARTH"] = 1, ["WATER"] = 2, ["FIRE"] = 3, ["AIR"] = 4},
+		orderTotemsInElement = {["EARTH"] = {}, ["WATER"] = {}, ["FIRE"] = {}, ["AIR"] = {}},
 	}
 }
 
+function Yatabar:InitOptions()
+	local options = {
+		name = Yatabar.name,
+		desc = "Totem with popup buttons",
+		icon = "Interface\\Icons\\inv_banner_01",
+		type="group",
+		args = {
+		-- 	showUI = {
+		-- 		name = L["Hide mainbar"],
+		-- 		desc = L["Hides the default mainbar"],
+		-- 		type = "toggle",
+		-- 		order = 1,
+		-- 		get = function() return Klappa2.config.hideUI end,
+		-- 		set = function(info,value) Klappa2:SetDefaultUIElements(value); Klappa2.config.hideUI = value; end,
+		-- 	},
+
+		-- 	add = {
+		-- 		name = L["Add Bar"],
+		-- 		desc = L["Add a new bar"],
+		-- 		type = "execute",
+		-- 		order = 3,
+		-- 		func = function() self:AddBar() end,
+		-- 	},
+		-- 	del = {
+		-- 		name = L["Delete Bar"],
+		-- 		desc = L["Delete the last bar"],
+		-- 		type = "execute",
+		-- 		order = 6,
+		-- 		func = function() self:DeleteBar() end,
+		-- 	},
+		-- 	ids = {
+		-- 		name = L["Show all buttonids"],
+		-- 		desc = L["Shows all buttons with their ids"],
+		-- 		type = "execute",
+		-- 		order = 9,
+		-- 		func = function() self:ShowIDs() end,
+		-- 	},
+		}
+	}
+
+	return options;
+end
+
 function Yatabar:OnInitialize()
 	self.db = LibStub("AceDB-3.0"):New("YatabarDB", defaults)
-	Yatabar.orderElements = self.db.char.orderElements
+	self.orderElements = self.db.char.orderElements
+	self.orderTotemsInElement = self.db.char.orderTotemsInElement
+	self:GetTotemSpellsByElement()
+	self:CheckOrderTotemSpells()
+
+	self.options = self:InitOptions()
+
+	LibStub("AceConfig-3.0"):RegisterOptionsTable(Yatabar.name, self.options)
+	self.optionsFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions(self.name, self.name)
+	self.optionsFrameGui = LibStub("AceConfigDialog-3.0"):Open(self.name)
+	self:RegisterChatCommand("yb", "ChatCommand")
+	self:RegisterChatCommand("yatabar", "ChatCommand")
 end
 
 function Yatabar:OnEnable()
@@ -66,7 +120,6 @@ function Yatabar:OnEnable()
 	self:CreateBar(Yatabar.totemCount)
 	self:LoadPosition()
 	--self:GetTotemSpells()
-	self:GetTotemSpellsByElement()
 	for element, spell in pairs(Yatabar.availableTotems) do
 		self:CreateTotemHeader(element)
 	end
@@ -136,7 +189,7 @@ function Yatabar:CreateTotemHeader(element)
 
 	Yatabar["TotemHeader"..element]:Show()
 
-	for idx, spellId in ipairs(self.availableTotems[element]) do
+	for spellId, idx in ipairs(self.orderTotemsInElement[element]) do
 		if type(spellId) == "number" then
 			self:CreateSpellPopupButton(Yatabar["TotemHeader"..element], idx, spellId)
 		end
@@ -231,8 +284,6 @@ function Yatabar:GetTotemSpells()
 			countSpells = countSpells +1
 		end
 	end
-	Yatabar.countAvailableTotemspells = countSpells-1
-	print("Anzahl Spells", Yatabar.countAvailableTotemspells)
 end
 
 function Yatabar:GetTotemSpellsByElement()
@@ -243,10 +294,13 @@ function Yatabar:GetTotemSpellsByElement()
 			spellname, rank, icon, castTime, minRange, maxRange, spellId = GetSpellInfo(spell["id"])
 			--welche Totems sind dem Spieler bekannt:
 			spellname, rank, icon, castTime, minRange, maxRange, spellId = GetSpellInfo(spellname)
+			print(spell["id"])
 			if spellname ~= nil then
 				table.insert(Yatabar.availableTotems[element],spellId)
-				Yatabar.orderTotemsInElement[element][spellId] = count+1
-				countSpells = countSpells +1
+				if Yatabar.orderTotemsInElement[element] ~= nil then
+					Yatabar.orderTotemsInElement[element][spellId] = count+1
+				end
+				countSpells = countSpells + 1
 			end
 		end
 		Yatabar.availableTotems[element].count = countSpells
@@ -256,11 +310,24 @@ function Yatabar:GetTotemSpellsByElement()
 	end
 end
 
+--wenn neue Spell verfügbar sind, diese neu hinzufügen
+function Yatabar:CheckOrderTotemSpells()
+	for element, spell in pairs(Yatabar.availableTotems) do
+		for i=1, Yatabar.availableTotems[element].count do
+			print(#Yatabar.orderTotemsInElement[element])
+			if Yatabar.orderTotemsInElement[element][spell] == nil then
+				Yatabar.orderTotemsInElement[element][spell] = #Yatabar.orderTotemsInElement[element]+1
+			end
+		end
+	end
+end
+
 function Yatabar:GetTotemCount()
 	count = 0
 	for i =1, 4 do 
 		haveTotem, totemName, startTime, duration = GetTotemInfo(i)
 		if haveTotem then
+			print(totemName)
 			count = count + 1
 		end
 		--print(GetTotemTimeLeft(i)) 
@@ -321,4 +388,14 @@ function Yatabar:LoadPosition()
 	local scale = self.db.char.scale
 	local xOfs, yOfs = self.db.char.xOfs, self.db.char.yOfs
 	Yatabar.bar:SetPoint("CENTER",UIParent, "CENTER", xOfs, yOfs);
+end
+
+function Yatabar:ChatCommand(input)
+	if not input or input:trim() == "" then
+	--InterfaceOptionsFrame_OpenToCategory(self.optionsFrame)
+	LibStub("AceConfigDialog-3.0"):Open("Yatabar")
+  else
+  print("console")
+    LibStub("AceConfigCmd-3.0").HandleCommand(Yatabar, "yb", "Options", input)
+  end
 end

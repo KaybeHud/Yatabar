@@ -14,7 +14,7 @@
 ## X-Curse-Project-Name: Yatabar
 
 embeds.xml
-Localization\enUS.lua
+Localization\enEN.lua
 Localization\deDE.lua
 TotemData.lua
 Yatabar.lua

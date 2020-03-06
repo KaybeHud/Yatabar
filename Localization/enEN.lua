@@ -3,7 +3,7 @@ if not L then return end
 
 	L["Hide mainbar"] = true 	
 	L["Hides the default mainbar"] = true 
-	L["Button Lock"] = true 
+	L["Button Lock"] = true
 	L["Lock the buttons"] = true 
 	L["Lock the bar"] = true 
 	L["Scale buttons"] = true 
