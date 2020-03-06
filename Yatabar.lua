@@ -32,7 +32,7 @@ local ldb = LibStub:GetLibrary("LibDataBroker-1.1"):NewDataObject(Yatabar.name, 
 			for idx, button in pairs(Yatabar["TotemHeaderFIRE"]) do
 				--print(type(idx), type(button))
 				if (type(button)=="table") then
-					print(idx,button.name, button.spellId)
+					print(idx,button.name, button:GetAttribute("spell"))
 				end
 			end
 
@@ -158,7 +158,7 @@ function Yatabar:CreateBar(count)
 		edgeSize = 0,
 		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
-	Yatabar.bar.overlay:SetBackdropColor(1, 1, 1, 1)
+	Yatabar.bar.overlay:SetBackdropColor(0, 1, 1, 1)
 	Yatabar.bar.overlay:SetBackdropBorderColor(0.5, 0.5, 0, 0)
 	Yatabar.bar.overlay:EnableMouse(true)
 	Yatabar.bar.overlay:RegisterForDrag("LeftButton")
@@ -170,7 +170,6 @@ end
 function Yatabar:CreateTotemHeader(element)
 	--print("CreateTotemHeader")
 	local frameBorder = Yatabar.frameBorder 
-	print("create header")
 	Yatabar["TotemHeader"..element] = CreateFrame("Frame", "TotemHeader"..element, Yatabar.bar, "SecureHandlerStateTemplate")
 	Yatabar["TotemHeader"..element]:SetPoint("BOTTOMLEFT", Yatabar.bar,"BOTTOMLEFT",(self.orderElements[element]-1) * Yatabar.buttonSize + frameBorder, frameBorder)
 	Yatabar["TotemHeader"..element]:SetSize(Yatabar.buttonSize, Yatabar.buttonSize * self.availableTotems[element].count)
@@ -189,76 +188,95 @@ function Yatabar:CreateTotemHeader(element)
 
 	Yatabar["TotemHeader"..element]:Show()
 
-	for spellId, idx in ipairs(self.orderTotemsInElement[element]) do
-		if type(spellId) == "number" then
-			self:CreateSpellPopupButton(Yatabar["TotemHeader"..element], idx, spellId)
+	--prüfen ob Reihenfolge vorhanden ist
+	if self.orderTotemsInElement[element] == nil then --wenn noch keine Reihenfolge vorhanden ist dann die Totemspells einfach durchgehen
+		for idx, spellId in ipairs(self.availableTotems[element]) do
+			if type(spellId) == "number" then
+				self:CreateSpellPopupButton(Yatabar["TotemHeader"..element], idx, spellId, element)
+			end
+		end
+	else	--sonst nach reihenfolge
+		for spellId, idx in pairs(self.orderTotemsInElement[element]) do
+			if type(spellId) == "number" then
+				self:CreateSpellPopupButton(Yatabar["TotemHeader"..element], idx, spellId, element)
+			end
 		end
 	end
 
 		Yatabar["TotemHeader"..element]:Execute ( [[show = [=[
 			local popups = newtable(self:GetChildren())
 			for i, button in ipairs(popups) do
-				isDel = button:GetAttribute("deleted")
-				if not (isDel) then
-					button:Show()
-				end
+				button:Show()
 			end
 		]=] ]])
 
 		Yatabar["TotemHeader"..element]:Execute( [[close = [=[
 		local popups = newtable(self:GetChildren())
-			for i, button in ipairs(popups) do
-				if not (i == 1) then
+			for i, button in pairs(popups) do
+				if not (button:GetAttribute("index") == 1) then
 					button:Hide()
-				end
+				end				
 			end
 		]=] ]])
 end
 
-function Yatabar:CreateActionPopupButton(main, spellCount, id)
-	--local id = main.id + spellCount--self.totemCount
-	--print("mainID:"..main.id)
-	print("Popupid:"..id)
-	local name = "YatabarButton"..id
-	main["popupButton"..id] = LAB:CreateButton(id, name , main)
-	main["popupButton"..id].name = "popupButton"..id
-	print(id - spellCount) --self.totemCount)
-	main["popupButton"..id]:SetPoint("BOTTOMLEFT", main,"BOTTOMLEFT", 0,(id - spellCount - 1) * Yatabar.buttonSize) --(id - 1 - self.totemCount) * Yatabar.buttonSize
-	main["popupButton"..id]:SetAttribute('state', 1)
-	main["popupButton"..id]:SetState(1, "action", id)
-	SecureHandlerWrapScript(main["popupButton"..id],"OnLeave",main,[[return true, ""]], [[
+
+function Yatabar:CreateSpellPopupButton(main,index, spellId, element)
+	local name = "YatabarButton"..element..index
+	main["popupButton"..element..index] = LAB:CreateButton(spellId, name , main)
+	main["popupButton"..element..index].name = "popupButton"..element..index
+	main["popupButton"..element..index].spellId = spellId
+	main["popupButton"..element..index].index = index
+	main["popupButton"..element..index].element = element
+	main["popupButton"..element..index]:SetPoint("BOTTOMLEFT", main,"BOTTOMLEFT", 0,(index - 1) * Yatabar.buttonSize)
+	main["popupButton"..element..index]:SetAttribute('state', "spell1")
+	main["popupButton"..element..index]:SetAttribute('index', index)
+	main["popupButton"..element..index]:SetState("spell1", "spell", spellId)
+	--main["popupButton"..element..index]:SetScript("OnDragStart", nil);
+	--main["popupButton"..element..index]:SetScript("OnReceiveDrag", function() Yatabar:isTotemFor(element); end );
+	main["popupButton"..element..index]:SetScript("OnEvent", function(arg1,event) Yatabar:OnEventFunc(event, arg1, element, main["popupButton"..element..index]); end);
+	SecureHandlerWrapScript(main["popupButton"..element..index],"OnLeave",main,[[return true, ""]], [[
 		inHeader =  control:IsUnderMouse(true)
 		if not inHeader then
 			control:Run(close);
 		end	    
 	]])
 
-	SecureHandlerWrapScript(main["popupButton"..id],"OnEnter",main, [[
+	SecureHandlerWrapScript(main["popupButton"..element..index],"OnEnter",main, [[
 		control:Run(show);
 		]]);
+
+	main["popupButton"..element..index]:RegisterEvent("ACTIONBAR_SHOWGRID");
+	main["popupButton"..element..index]:RegisterEvent("ACTIONBAR_HIDEGRID");
+	main["popupButton"..element..index]:RegisterEvent("PLAYER_REGEN_DISABLED");
+	main["popupButton"..element..index]:RegisterEvent("PLAYER_REGEN_ENABLED");
+	
+	
 end
 
-function Yatabar:CreateSpellPopupButton(main,index, spellId)
-	local name = "YatabarButton"..spellId
-	main["popupButton"..spellId] = LAB:CreateButton(spellId, name , main)
-	main["popupButton"..spellId].name = "popupButton"..spellId
-	main["popupButton"..spellId].spellId = spellId
-	print(index) 
-	main["popupButton"..spellId]:SetPoint("BOTTOMLEFT", main,"BOTTOMLEFT", 0,(index - 1) * Yatabar.buttonSize)
-	main["popupButton"..spellId]:SetAttribute('state', "spell1")
-	main["popupButton"..spellId]:SetState("spell1", "spell", spellId)
-	SecureHandlerWrapScript(main["popupButton"..spellId],"OnLeave",main,[[return true, ""]], [[
-		inHeader =  control:IsUnderMouse(true)
-		if not inHeader then
-			control:Run(close);
-		end	    
-	]])
+function Yatabar:OnEventFunc(event, arg, element, button)
+	if ( event == "ACTIONBAR_SHOWGRID" ) then
+		if InCombatLockdown() then return end
+		if not Yatabar:isTotemFor(element) then
+			button:DisableDragNDrop(true)
+		else
+			button:Show()
+		end
+	end
+	if ( event == "ACTIONBAR_HIDEGRID" ) then
+		if InCombatLockdown() then return end
+		button:DisableDragNDrop(false)
+		Yatabar:HidePopups()
+	end
 
-	SecureHandlerWrapScript(main["popupButton"..spellId],"OnEnter",main, [[
-		control:Run(show);
-		]]);
+	if event == "PLAYER_REGEN_ENABLED" then
+		button:DisableDragNDrop(false)
+	end
+	if event == "PLAYER_REGEN_DISABLED" then
+		button:DisableDragNDrop(true)
+	end
+	
 end
-
 
 function Yatabar:hasSpell(spellId)
 	spellname, rank, icon, castTime, minRange, maxRange, spellId = GetSpellInfo(spellId)
@@ -291,21 +309,24 @@ function Yatabar:GetTotemSpellsByElement()
 	for element, totem in pairs(YatabarConfig.totems) do
 		Yatabar.availableTotems[element] = {}
 		for idx, spell in pairs(totem) do
-			spellname, rank, icon, castTime, minRange, maxRange, spellId = GetSpellInfo(spell["id"])
+			local spellname, rank, icon, castTime, minRange, maxRange, spellId = GetSpellInfo(spell["id"])
+			--print(spellname)
 			--welche Totems sind dem Spieler bekannt:
 			spellname, rank, icon, castTime, minRange, maxRange, spellId = GetSpellInfo(spellname)
-			print(spell["id"])
+			--print(spell["id"])
+			--print("---")
+			--print(spellname)
 			if spellname ~= nil then
 				table.insert(Yatabar.availableTotems[element],spellId)
 				if Yatabar.orderTotemsInElement[element] ~= nil then
-					Yatabar.orderTotemsInElement[element][spellId] = count+1
+					Yatabar.orderTotemsInElement[element][spellId] = countSpells+1
 				end
 				countSpells = countSpells + 1
 			end
 		end
 		Yatabar.availableTotems[element].count = countSpells
-		print(element)
-		print(Yatabar.availableTotems[element].count)
+		--print(element)
+		--print(Yatabar.availableTotems[element].count)
 		countSpells = 0
 	end
 end
@@ -314,10 +335,11 @@ end
 function Yatabar:CheckOrderTotemSpells()
 	for element, spell in pairs(Yatabar.availableTotems) do
 		for i=1, Yatabar.availableTotems[element].count do
-			print(#Yatabar.orderTotemsInElement[element])
+			--print(#Yatabar.orderTotemsInElement[element])
 			if Yatabar.orderTotemsInElement[element][spell] == nil then
 				Yatabar.orderTotemsInElement[element][spell] = #Yatabar.orderTotemsInElement[element]+1
 			end
+			--print(#Yatabar.orderTotemsInElement[element])
 		end
 	end
 end
@@ -384,6 +406,26 @@ function Yatabar:SavePosition()
 	self.db.char.scale = scale	
 end
 
+function Yatabar.SaveTotemSpellOrder(element)
+	self.db.char.orderTotemsInElement[element] = Yatabar.orderTotemsInElement[element]
+end
+
+function Yatabar:isTotemFor(element)
+	infoType, spell = GetCursorInfo()
+	skillType, spellID = GetSpellBookItemInfo(spell, BOOKTYPE_SPELL)
+	if infoType == "spell" then 
+		if Yatabar:hasSpell(spellID) then
+			for spell, index in pairs(Yatabar.orderTotemsInElement[element]) do
+				if spell == spellID then
+					return true
+				end
+			end
+		end
+	end
+	return false
+	--self:SaveTotemSpellOrder(element)
+end
+
 function Yatabar:LoadPosition()
 	local scale = self.db.char.scale
 	local xOfs, yOfs = self.db.char.xOfs, self.db.char.yOfs
@@ -398,4 +440,30 @@ function Yatabar:ChatCommand(input)
   print("console")
     LibStub("AceConfigCmd-3.0").HandleCommand(Yatabar, "yb", "Options", input)
   end
+end
+
+
+
+function Yatabar:CreateActionPopupButton(main, spellCount, id)
+	--local id = main.id + spellCount--self.totemCount
+	--print("mainID:"..main.id)
+	--print("Popupid:"..id)
+	local name = "YatabarButton"..id
+	main["popupButton"..id] = LAB:CreateButton(id, name , main)
+	main["popupButton"..id].name = "popupButton"..id
+	print(id - spellCount) --self.totemCount)
+	main["popupButton"..id]:SetPoint("BOTTOMLEFT", main,"BOTTOMLEFT", 0,(id - spellCount - 1) * Yatabar.buttonSize) --(id - 1 - self.totemCount) * Yatabar.buttonSize
+	main["popupButton"..id]:SetAttribute('state', 1)
+	main["popupButton"..id]:SetAttribute('index', index)
+	main["popupButton"..id]:SetState(1, "action", id)
+	SecureHandlerWrapScript(main["popupButton"..id],"OnLeave",main,[[return true, ""]], [[
+		inHeader =  control:IsUnderMouse(true)
+		if not inHeader then
+			control:Run(close);
+		end	    
+	]])
+
+	SecureHandlerWrapScript(main["popupButton"..id],"OnEnter",main, [[
+		control:Run(show);
+		]]);
 end
