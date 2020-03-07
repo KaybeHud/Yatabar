@@ -4,7 +4,7 @@ end
 
 Yatabar = LibStub("AceAddon-3.0"):NewAddon("Yatabar", "AceConsole-3.0")
 local LAB = LibStub("LibActionButton-1.0")
-Yatabar.totemCount = 0  --nur zum Testen, sonst 0 und dann ermitteln wie viele Totems vorhanden
+Yatabar.totemCount = 0 
 Yatabar.buttonSize = 36
 Yatabar.name = "Yatabar"
 Yatabar.frameBorder = 8
@@ -46,6 +46,8 @@ local defaults =
 	char = {
 		orderElements = {["EARTH"] = 1, ["WATER"] = 2, ["FIRE"] = 3, ["AIR"] = 4},
 		orderTotemsInElement = {["EARTH"] = {}, ["WATER"] = {}, ["FIRE"] = {}, ["AIR"] = {}},
+		orientation = "horzup",
+		padding = 0,
 	}
 }
 
@@ -94,6 +96,7 @@ end
 
 function Yatabar:OnInitialize()
 	self.db = LibStub("AceDB-3.0"):New("YatabarDB", defaults)
+	self.config = self.db.char
 	self.orderElements = self.db.char.orderElements
 	self.orderTotemsInElement = self.db.char.orderTotemsInElement
 	self:GetTotemSpellsByElement()
@@ -256,6 +259,29 @@ function Yatabar:CreateSpellPopupButton(main,index, spellId, element)
 			self:Hide()
 		]=] ]])
 	
+end
+
+function Yatabar:NewLayout()
+	local rootx, rooty = 0, 0;
+	local isVert, isRtDn = false, false;
+	local size = Yatabar.buttonSize;
+	local orientation = self.config.orientation;
+	if (orientation == "horzdown") then
+		isRtDn = true;
+	elseif (orientation == "vertleft") then
+		isVert = true;
+	elseif (orientation == "vertright") then
+		isVert = true;
+		isRtDn = true;
+	end
+	if (isVert) then
+		rootx = size;
+	else
+		rooty = size;
+	end
+end
+
+function Yatabar:UpdateLayout(frame, x,y,isVert,isRtDn)
 end
 
 function Yatabar:OnEventFunc(event, arg, element, button)
