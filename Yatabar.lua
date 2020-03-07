@@ -1,6 +1,6 @@
--- if select(2, UnitClass('player')) ~= "SHAMAN" then
--- 	return
--- end
+if select(2, UnitClass('player')) ~= "SHAMAN" then
+	return
+end
 
 Yatabar = LibStub("AceAddon-3.0"):NewAddon("Yatabar", "AceConsole-3.0")
 local LAB = LibStub("LibActionButton-1.0")
@@ -15,6 +15,8 @@ Yatabar.orderTotemsInElement = {["EARTH"] = {}, ["WATER"] = {}, ["FIRE"] = {}, [
 local _G = getfenv(0)
 local L = LibStub("AceLocale-3.0"):GetLocale(Yatabar.name, true)
 local GetTotemInfo = LibStub("LibTotemInfo-1.0").GetTotemInfo
+local MSQ = LibStub("Masque", true)
+local myGroup = {}
 
 --LDB
 local ldb = LibStub:GetLibrary("LibDataBroker-1.1"):NewDataObject(Yatabar.name, {
@@ -24,8 +26,6 @@ local ldb = LibStub:GetLibrary("LibDataBroker-1.1"):NewDataObject(Yatabar.name, 
 		if (button == "RightButton") then
 			Yatabar.isLocked = not Yatabar.isLocked
 			Yatabar:toggleLock(Yatabar.isLocked)
-			--print("Rechtsklick:noch keine Funktion")
-	
 		else
 			print("Linksklick, noch keine Funktion")
 			LibStub("AceConfigDialog-3.0"):Open(Yatabar.name)
@@ -106,6 +106,10 @@ function Yatabar:OnInitialize()
 	self.optionsFrameGui = LibStub("AceConfigDialog-3.0"):Open(self.name)
 	self:RegisterChatCommand("yb", "ChatCommand")
 	self:RegisterChatCommand("yatabar", "ChatCommand")
+
+	if MSQ then
+		myGroup = MSQ:Group(self.name,nil, true)
+	end
 end
 
 function Yatabar:OnEnable()
@@ -225,6 +229,7 @@ function Yatabar:CreateSpellPopupButton(main,index, spellId, element)
 	main["popupButton"..element..index]:SetAttribute('state', "spell1")
 	main["popupButton"..element..index]:SetAttribute('index', index)
 	main["popupButton"..element..index]:SetState("spell1", "spell", spellId)
+	main["popupButton"..element..index]:AddToMasque(myGroup)
 	--main["popupButton"..element..index]:SetScript("OnDragStart", nil);
 	--main["popupButton"..element..index]:SetScript("OnReceiveDrag", function() Yatabar:isTotemFor(element); end );
 	main["popupButton"..element..index]:SetScript("OnEvent", function(arg1,event) Yatabar:OnEventFunc(event, arg1, element, main["popupButton"..element..index]); end);
@@ -244,6 +249,12 @@ function Yatabar:CreateSpellPopupButton(main,index, spellId, element)
 	main["popupButton"..element..index]:RegisterEvent("PLAYER_REGEN_DISABLED");
 	main["popupButton"..element..index]:RegisterEvent("PLAYER_REGEN_ENABLED");
 	
+	main["popupButton"..element..index]:Execute ( [[show = [=[
+			self:Show()
+		]=] ]])
+	main["popupButton"..element..index]:Execute ( [[hide = [=[
+			self:Hide()
+		]=] ]])
 	
 end
 
@@ -253,7 +264,10 @@ function Yatabar:OnEventFunc(event, arg, element, button)
 		if not Yatabar:isTotemFor(element) then
 			button:DisableDragNDrop(true)
 		else
-			button:Show()
+			--button:Show()
+			Yatabar["TotemHeader"..element]:Execute([[
+			control:Run(show)
+			]])
 		end
 	end
 	if ( event == "ACTIONBAR_HIDEGRID" ) then
@@ -326,7 +340,6 @@ function Yatabar:CheckOrderTotemSpells()
 			if Yatabar.orderTotemsInElement[element][spell] == nil then
 				Yatabar.orderTotemsInElement[element][spell] = #Yatabar.orderTotemsInElement[element]+1
 			end
-			--print(#Yatabar.orderTotemsInElement[element])
 		end
 	end
 end
@@ -420,10 +433,10 @@ end
 
 function Yatabar:ChatCommand(input)
 	if not input or input:trim() == "" then
-	--InterfaceOptionsFrame_OpenToCategory(self.optionsFrame)
+	InterfaceOptionsFrame_OpenToCategory(self.optionsFrame)
 	LibStub("AceConfigDialog-3.0"):Open("Yatabar")
   else
-  print("console")
+    print("console")
     LibStub("AceConfigCmd-3.0").HandleCommand(Yatabar, "yb", "Options", input)
   end
 end
