@@ -28,14 +28,7 @@ local ldb = LibStub:GetLibrary("LibDataBroker-1.1"):NewDataObject(Yatabar.name, 
 	
 		else
 			print("Linksklick, noch keine Funktion")
-			--LibStub("AceConfigDialog-3.0"):Open(name)
-			for idx, button in pairs(Yatabar["TotemHeaderFIRE"]) do
-				--print(type(idx), type(button))
-				if (type(button)=="table") then
-					print(idx,button.name, button:GetAttribute("spell"))
-				end
-			end
-
+			LibStub("AceConfigDialog-3.0"):Open(Yatabar.name)
 		end
 	end,
 	OnTooltipShow = function(Tip)
@@ -63,14 +56,14 @@ function Yatabar:InitOptions()
 		icon = "Interface\\Icons\\inv_banner_01",
 		type="group",
 		args = {
-		-- 	showUI = {
-		-- 		name = L["Hide mainbar"],
-		-- 		desc = L["Hides the default mainbar"],
-		-- 		type = "toggle",
-		-- 		order = 1,
-		-- 		get = function() return Klappa2.config.hideUI end,
-		-- 		set = function(info,value) Klappa2:SetDefaultUIElements(value); Klappa2.config.hideUI = value; end,
-		-- 	},
+			showUI = {
+				name = "Hide mainbar",
+				desc = "Hides the default mainbar",
+				type = "toggle",
+				order = 1,
+				get = function() return true end,
+				set = function(info,value)  end,
+			},
 
 		-- 	add = {
 		-- 		name = L["Add Bar"],
@@ -305,33 +298,27 @@ function Yatabar:GetTotemSpells()
 end
 
 function Yatabar:GetTotemSpellsByElement()
-	countSpells = 0
+	countSpells = 1
 	for element, totem in pairs(YatabarConfig.totems) do
 		Yatabar.availableTotems[element] = {}
 		for idx, spell in pairs(totem) do
 			local spellname, rank, icon, castTime, minRange, maxRange, spellId = GetSpellInfo(spell["id"])
-			--print(spellname)
 			--welche Totems sind dem Spieler bekannt:
 			spellname, rank, icon, castTime, minRange, maxRange, spellId = GetSpellInfo(spellname)
-			--print(spell["id"])
-			--print("---")
-			--print(spellname)
 			if spellname ~= nil then
 				table.insert(Yatabar.availableTotems[element],spellId)
 				if Yatabar.orderTotemsInElement[element] ~= nil then
-					Yatabar.orderTotemsInElement[element][spellId] = countSpells+1
+					Yatabar.orderTotemsInElement[element][spellId] = countSpells
 				end
 				countSpells = countSpells + 1
 			end
 		end
-		Yatabar.availableTotems[element].count = countSpells
-		--print(element)
-		--print(Yatabar.availableTotems[element].count)
-		countSpells = 0
+		Yatabar.availableTotems[element].count = countSpells - 1
+		countSpells = 1
 	end
 end
 
---wenn neue Spell verfügbar sind, diese neu hinzufügen
+--sortieren und wenn neue Spells verfügbar sind, diese neu hinzufügen
 function Yatabar:CheckOrderTotemSpells()
 	for element, spell in pairs(Yatabar.availableTotems) do
 		for i=1, Yatabar.availableTotems[element].count do
@@ -347,12 +334,11 @@ end
 function Yatabar:GetTotemCount()
 	count = 0
 	for i =1, 4 do 
-		haveTotem, totemName, startTime, duration = GetTotemInfo(i)
+		haveTotem, totemName = GetTotemInfo(i)
 		if haveTotem then
 			print(totemName)
 			count = count + 1
 		end
-		--print(GetTotemTimeLeft(i)) 
 	end
 	return count
 end
@@ -406,9 +392,9 @@ function Yatabar:SavePosition()
 	self.db.char.scale = scale	
 end
 
-function Yatabar.SaveTotemSpellOrder(element)
-	self.db.char.orderTotemsInElement[element] = Yatabar.orderTotemsInElement[element]
-end
+-- function Yatabar.SaveTotemSpellOrder(element)
+-- 	self.db.char.orderTotemsInElement[element] = Yatabar.orderTotemsInElement[element]
+-- end
 
 function Yatabar:isTotemFor(element)
 	infoType, spell = GetCursorInfo()
