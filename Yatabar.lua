@@ -66,6 +66,20 @@ function Yatabar:InitOptions()
 				get = function() return true end,
 				set = function(info,value)  end,
 			},
+			orientation = {
+				type = "select",
+				name = L["Orientation"],
+				desc = L["Set the orientation of the Klappa2 Bar."],
+				order = 6,
+				get = function() return Yatabar.config.orientation; end,
+				set = function(info,value) Yatabar.config.orientation = value; self:NewLayout(); end,
+				values = {
+					["horzup"] = L["Horizontal, Grow Up"],
+					["horzdown"] = L["Horizontal, Grow Down"],
+					["vertright"] = L["Vertical, Grow Right"],
+					["vertleft"] = L["Vertical, Grow Left"],
+				},
+			},
 
 		-- 	add = {
 		-- 		name = L["Add Bar"],
