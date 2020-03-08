@@ -10,6 +10,7 @@ Yatabar.name = "Yatabar"
 Yatabar.frameBorder = 8
 Yatabar.availableTotems = {}
 Yatabar.isLocked = true
+Yatabar.activateSpellOrder = {active = false, element = "", order = 1}
 Yatabar.orderElements = {}
 Yatabar.orderTotemsInElement = {["EARTH"] = {}, ["WATER"] = {}, ["FIRE"] = {}, ["AIR"] = {}}
 local _G = getfenv(0)
@@ -57,14 +58,6 @@ function Yatabar:InitOptions()
 		icon = "Interface\\Icons\\inv_banner_01",
 		type="group",
 		args = {
-			-- showUI = {
-			-- 	name = "Hide mainbar",
-			-- 	desc = "Hides the default mainbar",
-			-- 	type = "toggle",
-			-- 	order = 1,
-			-- 	get = function() return true end,
-			-- 	set = function(info,value)  end,
-			-- },
 			orientation = {
 				type = "select",
 				name = L["Orientation"],
@@ -85,8 +78,8 @@ function Yatabar:InitOptions()
 				desc = "Reihenfolge desc",
 				type = "multiselect",
 				order = 3,
-				values = Yatabar.orderElements,
-				get = function(table, key) print(key, table); return Yatabar:GetTotemOrder(key) end,
+				values = Yatabar.config.orderElements,
+				get = function(table, key) return Yatabar:GetTotemOrder(key) end,
 				set = function(table, key) Yatabar:SetTotemOrder(key) end,
 			},
 			image = {
@@ -95,24 +88,24 @@ function Yatabar:InitOptions()
 				image = "136040",
 				type = "execute",
 				order = 6,
-				func = function() print("Bild") end,
+				func = function(a,b) 
+					print("Bild", a,b); 
+					for k, v in pairs(a) do	
+						print(k,v)
+					end
+					for k, v in pairs(a.option) do	
+						print("opotino:",k,v)
+					end
+					a.option.name = "Pos 1"
+					for k, v in pairs(a.options) do	
+						print("options:",k,v)
+					end
+				 end,
 			},
-			buttonorder = {
-				type = group,
+			totems = {
+				type = "group",
+				name = "Totems",
 				args = {
-					image = {
-						name = "Button",
-						desc = "TEst Buttons",
-						image = "136040",
-						type = "execute",
-						order = 6,
-						func = function() print("Bild") end,
-					},
-					keybindingtest = {
-						type = "keybinding",
-						get = function() return true end,
-						set = function(a,b) print("binding:"a,b) end,
-					},
 				},
 			},
 		-- 	ids = {
@@ -129,12 +122,11 @@ function Yatabar:InitOptions()
 end
 
 function Yatabar:OnInitialize()
+	print("Initialize")
 	self.db = LibStub("AceDB-3.0"):New("YatabarDB", defaults)
 	self.config = self.db.char
-	self.orderElements = self.db.char.orderElements
-	self.orderTotemsInElement = self.db.char.orderTotemsInElement
-	self:GetTotemSpellsByElement()
-	self:CheckOrderTotemSpells()
+	self.orderElements = self.config.orderElements
+	self.orderTotemsInElement = self.config.orderTotemsInElement
 
 	self.options = self:InitOptions()
 
@@ -150,7 +142,9 @@ function Yatabar:OnInitialize()
 end
 
 function Yatabar:OnEnable()
-	Yatabar.totemCount = Yatabar:GetTotemCount()
+	self:GetTotemSpellsByElement()
+	self:CheckOrderTotemSpells()
+	self.totemCount = self:GetTotemCount()
 	self:CreateBar()
 	self:LoadPosition()
 	--self:GetTotemSpells()
@@ -158,6 +152,7 @@ function Yatabar:OnEnable()
 		self:CreateTotemHeader(element)
 	end
 	self:SetLayout()
+	self:AddOptionsForTotems()
 	Yatabar:HidePopups()
 	--print("Enabled")
 end
@@ -187,12 +182,16 @@ function Yatabar:CreateBar()
 	Yatabar.bar.overlay:EnableMouse(true)
 	Yatabar.bar.overlay:RegisterForDrag("LeftButton")
 	Yatabar.bar.overlay:Hide()
+
+	Yatabar.bar:RegisterEvent("LEARNED_SPELL_IN_TAB")
+	Yatabar.bar:RegisterEvent("PLAYER_REGEN_DISABLED")
+	Yatabar.bar:RegisterEvent("PLAYER_REGEN_ENABLED")
 	
 	Yatabar.bar:Show()
 end
 
 function Yatabar:CreateTotemHeader(element)
-	--print("CreateTotemHeader")
+	print("CreateTotemHeader")
 	local frameBorder = Yatabar.frameBorder 
 	Yatabar["TotemHeader"..element] = CreateFrame("Frame", "TotemHeader"..element, Yatabar.bar, "SecureHandlerStateTemplate")
 	Yatabar["TotemHeader"..element]:SetPoint("BOTTOMLEFT", Yatabar.bar,"BOTTOMLEFT",(self.orderElements[element]-1) * Yatabar.buttonSize + frameBorder, frameBorder)
@@ -246,6 +245,7 @@ end
 
 
 function Yatabar:CreateSpellPopupButton(main,index, spellId, element)
+	--print("CreatePopups")
 	local name = "YatabarButton"..element..index
 	main["popupButton"..element..index] = LAB:CreateButton(spellId, name , main)
 	main["popupButton"..element..index].name = "popupButton"..element..index
@@ -259,7 +259,7 @@ function Yatabar:CreateSpellPopupButton(main,index, spellId, element)
 	if MSQ then
 		main["popupButton"..element..index]:AddToMasque(myGroup)
 	end
-	--main["popupButton"..element..index]:SetScript("OnDragStart", nil);
+	main["popupButton"..element..index]:SetScript("OnDragStart", nil);
 	--main["popupButton"..element..index]:SetScript("OnReceiveDrag", function() Yatabar:isTotemFor(element); end );
 	main["popupButton"..element..index]:SetScript("OnEvent", function(arg1,event) Yatabar:OnEventFunc(event, arg1, element, main["popupButton"..element..index]); end);
 	SecureHandlerWrapScript(main["popupButton"..element..index],"OnLeave",main,[[return true, ""]], [[
@@ -275,8 +275,7 @@ function Yatabar:CreateSpellPopupButton(main,index, spellId, element)
 
 	main["popupButton"..element..index]:RegisterEvent("ACTIONBAR_SHOWGRID");
 	main["popupButton"..element..index]:RegisterEvent("ACTIONBAR_HIDEGRID");
-	main["popupButton"..element..index]:RegisterEvent("PLAYER_REGEN_DISABLED");
-	main["popupButton"..element..index]:RegisterEvent("PLAYER_REGEN_ENABLED");
+	
 	
 	-- main["popupButton"..element..index]:Execute( [[show = [=[
 	-- 		self:Show()
@@ -380,6 +379,13 @@ function Yatabar:OnEventFunc(event, arg, element, button)
 	if event == "PLAYER_REGEN_DISABLED" then
 		button:DisableDragNDrop(true)
 	end
+	if(event == "LEARNED_SPELL_IN_TAB") then
+		print("new spell learned")
+		self:GetTotemSpellsByElement()
+		self:CheckOrderTotemSpells()
+		self:SetLayout()
+		self:AddOptionsForTotems()
+	end
 	
 end
 
@@ -414,8 +420,7 @@ function Yatabar:GetTotemSpellsByElement()
 	for element, totem in pairs(YatabarConfig.totems) do
 		Yatabar.availableTotems[element] = {}
 		for idx, spell in pairs(totem) do
-			local spellname, rank, icon, castTime, minRange, maxRange, spellId = GetSpellInfo(spell["id"])
-			print("SpellInfo-Icon", icon)
+			local spellname = GetSpellInfo(spell["id"])
 			--welche Totems sind dem Spieler bekannt:
 			spellname, rank, icon, castTime, minRange, maxRange, spellId = GetSpellInfo(spellname)
 			if spellname ~= nil then
@@ -434,21 +439,130 @@ end
 --sortieren und wenn neue Spells verfügbar sind, diese neu hinzufügen
 function Yatabar:CheckOrderTotemSpells()
 	for element, spell in pairs(Yatabar.availableTotems) do
-		for i=1, Yatabar.availableTotems[element].count do
-			--print(#Yatabar.orderTotemsInElement[element])
-			if Yatabar.orderTotemsInElement[element][spell] == nil then
+		--for i=1, Yatabar.availableTotems[element].count do
+		for k, v in pairs(Yatabar.availableTotems[element]) do
+			print(k)
+			if Yatabar.orderTotemsInElement[element][spell] == nil and k ~= "count" then
+				print("in if")
 				Yatabar.orderTotemsInElement[element][spell] = #Yatabar.orderTotemsInElement[element]+1
 			end
 		end
 	end
 end
 
+function Yatabar:AddOptionsForTotems()
+	for element, order in pairs(self.orderElements) do
+		self.options.args.totems.args[element] = {
+			type = "group",
+			name = element,
+			args = {}
+		}
+		self.options.args.totems.args[element].args =  {
+			totem = {
+				name = element,
+				desc = element,
+				type = "range",
+				order = 1,
+				step = 1,
+				min = 1,
+				max = Yatabar.totemCount,
+				isPercent = false,
+				get = function() return self.orderElements[element]; end,
+				set = function(info,value) Yatabar:SetTotemOrder(value, element); end
+			},
+			activateSpellOrder = {
+				name = "Set Order",
+				order = 2,
+				desc = "Klicke um die Reihenfolge zu setzen",
+				type = "execute",
+				func = function(a,b) Yatabar:ActivateSetSpellOrder(element) end,
+			}
+		}
+
+		for spellId, idx in pairs(self.orderTotemsInElement[element]) do
+			local spellname, rank, icon, castTime, minRange, maxRange, spellId = GetSpellInfo(spellId)
+			if spellname ~= nil then
+				buttonGrp = {
+					type = "group",
+					inline = true,
+					name = "gruppe",
+					args = {
+						button = {
+							name = spellname,
+							order = 1,
+							desc = "On Position: "..idx,
+							image = icon,
+							type = "execute",
+							func = function(tbl,mousebutton) Yatabar:SetSpellOrder(tbl,mousebutton, element) end,
+						},
+						checkbox = {
+							name = "show",
+							type = "toggle",
+							set = function(a,b) end,
+							get = function()return true end
+						},
+					},
+				}
+				table.insert(self.options.args.totems.args[element].args, buttonGrp)
+			end
+		end
+	end
+
+end
+
 function Yatabar:GetTotemOrder(value)
 	return true
 end
 
-function Yatabar:SetTotemOrder(value)
-	print("set",value)
+function Yatabar:SetTotemOrder(newValue, element)
+	local postionToSwitch = self.orderElements[element]
+	local elementToSwitch = "" 
+	for element, order in pairs(self.orderElements) do
+		if order == newValue then
+			elementToSwitch = element
+			break
+		end
+	end
+	self.orderElements[element] = newValue
+	self.orderElements[elementToSwitch] = postionToSwitch
+	self:SetLayout()
+end
+
+function Yatabar:ActivateSetSpellOrder(element)
+	Yatabar.activateSpellOrder.active = not Yatabar.activateSpellOrder.active
+	if Yatabar.activateSpellOrder.active then
+		Yatabar.activateSpellOrder.order = 0
+		Yatabar.activateSpellOrder.element = element
+	end
+end
+
+function Yatabar:SetSpellOrder(tbl,mousebutton, element)
+	print("setOrder")
+	local spellname = tbl.option.name
+	spellname, rank, icon, castTime, minRange, maxRange, spellId = GetSpellInfo(spellname)
+	print(spellname)
+	-- for k,v in pairs(tbl) do
+	-- 	print(k,v)
+	-- end
+	-- for i,w in pairs(tbl.option) do
+	-- 	print("Option:",i,w)
+	-- end
+
+	local currentPosition = self.orderTotemsInElement[element][spellId]
+	print("oldpostion", currentPosition)
+	local newPosition = Yatabar.activateSpellOrder.order
+	print("new Position", newPosition)
+	local spellToSwitch = 0 
+	for spell, order in pairs(self.orderTotemsInElement[element]) do
+		if order == newPosition then
+			spellToSwitch = spell
+			break
+		end
+	end
+	self.orderTotemsInElement[element][spellId] = newPosition
+	self.orderTotemsInElement[element][spellToSwitch] = currentPosition
+	Yatabar.activateSpellOrder.order = Yatabar.activateSpellOrder.order+1
+	--self:SetLayout()
 end
 
 function Yatabar:GetTotemCount()
