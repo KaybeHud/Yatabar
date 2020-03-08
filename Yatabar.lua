@@ -27,7 +27,6 @@ local ldb = LibStub:GetLibrary("LibDataBroker-1.1"):NewDataObject(Yatabar.name, 
 			Yatabar.isLocked = not Yatabar.isLocked
 			Yatabar:toggleLock(Yatabar.isLocked)
 		else
-			print("Linksklick, noch keine Funktion")
 			LibStub("AceConfigDialog-3.0"):Open(Yatabar.name)
 		end
 	end,
@@ -58,21 +57,21 @@ function Yatabar:InitOptions()
 		icon = "Interface\\Icons\\inv_banner_01",
 		type="group",
 		args = {
-			showUI = {
-				name = "Hide mainbar",
-				desc = "Hides the default mainbar",
-				type = "toggle",
-				order = 1,
-				get = function() return true end,
-				set = function(info,value)  end,
-			},
+			-- showUI = {
+			-- 	name = "Hide mainbar",
+			-- 	desc = "Hides the default mainbar",
+			-- 	type = "toggle",
+			-- 	order = 1,
+			-- 	get = function() return true end,
+			-- 	set = function(info,value)  end,
+			-- },
 			orientation = {
 				type = "select",
 				name = L["Orientation"],
-				desc = L["Set the orientation of the Klappa2 Bar."],
+				desc = L["Set the orientation of the bar."],
 				order = 6,
 				get = function() return Yatabar.config.orientation; end,
-				set = function(info,value) Yatabar.config.orientation = value; self:NewLayout(); end,
+				set = function(info,value) Yatabar.config.orientation = value; self:SetLayout(); end,
 				values = {
 					["horzup"] = L["Horizontal, Grow Up"],
 					["horzdown"] = L["Horizontal, Grow Down"],
@@ -131,33 +130,23 @@ end
 
 function Yatabar:OnEnable()
 	Yatabar.totemCount = Yatabar:GetTotemCount()
-	self:CreateBar(Yatabar.totemCount)
+	self:CreateBar()
 	self:LoadPosition()
 	--self:GetTotemSpells()
 	for element, spell in pairs(Yatabar.availableTotems) do
 		self:CreateTotemHeader(element)
 	end
-	--self:CreateMainButtons()
-
-	--RegisterStateDriver(Yatabar.frame, "page", "[mod:alt]2;1")
-	
-	-- Yatabar.frame:SetAttribute("_onstate-page", [[
-	-- self:SetAttribute("state", newstate)
-	-- control:ChildUpdate("state", newstate)
-	-- ]])
-	--Yatabar.frame:Show()
-	--Yatabar.frame:SetAttribute("statehidden", nil)
-
+	self:SetLayout()
 	Yatabar:HidePopups()
-	print("Enabled")
+	--print("Enabled")
 end
 
-function Yatabar:CreateBar(count)
-	print("CreateBar") 
+function Yatabar:CreateBar()
+	--print("CreateBar") 
 	Yatabar.bar = CreateFrame("Frame", "YatabarBar", UIParent)
 	Yatabar.bar:SetPoint("CENTER", -300,0)
 
-	Yatabar.bar:SetWidth(self.buttonSize * count + (2*self.frameBorder));
+	Yatabar.bar:SetWidth(self.buttonSize * Yatabar.totemCount + (2*self.frameBorder));
 	Yatabar.bar:SetHeight(self.buttonSize + (2*self.frameBorder));
 	Yatabar.bar:SetMovable(true);
 	Yatabar.bar:SetClampedToScreen(true);
@@ -197,10 +186,10 @@ function Yatabar:CreateTotemHeader(element)
 	-- 		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	-- })
 	
-	-- Yatabar["TotemHeader"..element]:SetBackdropColor(0, 1, 1, 1)
+	-- Yatabar["TotemHeader"..element]:SetBackdropColor(0, 0, 1, 1)
 	-- Yatabar["TotemHeader"..element]:SetBackdropBorderColor(0.5, 0.5, 0, 0)
 
-	Yatabar["TotemHeader"..element]:Show()
+	-- Yatabar["TotemHeader"..element]:Show()
 
 	--prüfen ob Reihenfolge vorhanden ist
 	if self.orderTotemsInElement[element] == nil then --wenn noch keine Reihenfolge vorhanden ist dann die Totemspells einfach durchgehen
@@ -246,7 +235,9 @@ function Yatabar:CreateSpellPopupButton(main,index, spellId, element)
 	main["popupButton"..element..index]:SetAttribute('state', "spell1")
 	main["popupButton"..element..index]:SetAttribute('index', index)
 	main["popupButton"..element..index]:SetState("spell1", "spell", spellId)
-	main["popupButton"..element..index]:AddToMasque(myGroup)
+	if MSQ then
+		main["popupButton"..element..index]:AddToMasque(myGroup)
+	end
 	--main["popupButton"..element..index]:SetScript("OnDragStart", nil);
 	--main["popupButton"..element..index]:SetScript("OnReceiveDrag", function() Yatabar:isTotemFor(element); end );
 	main["popupButton"..element..index]:SetScript("OnEvent", function(arg1,event) Yatabar:OnEventFunc(event, arg1, element, main["popupButton"..element..index]); end);
@@ -266,37 +257,83 @@ function Yatabar:CreateSpellPopupButton(main,index, spellId, element)
 	main["popupButton"..element..index]:RegisterEvent("PLAYER_REGEN_DISABLED");
 	main["popupButton"..element..index]:RegisterEvent("PLAYER_REGEN_ENABLED");
 	
-	main["popupButton"..element..index]:Execute ( [[show = [=[
-			self:Show()
-		]=] ]])
-	main["popupButton"..element..index]:Execute ( [[hide = [=[
-			self:Hide()
-		]=] ]])
+	-- main["popupButton"..element..index]:Execute( [[show = [=[
+	-- 		self:Show()
+	-- 	]=] ]])
+	-- main["popupButton"..element..index]:Execute( [[hide = [=[
+	-- 		self:Hide()
+	-- 	]=] ]])
 	
 end
 
-function Yatabar:NewLayout()
-	local rootx, rooty = 0, 0;
-	local isVert, isRtDn = false, false;
-	local size = Yatabar.buttonSize;
+function Yatabar:SetLayout()
+	local isVert, isRtorDn = false, false;
 	local orientation = self.config.orientation;
 	if (orientation == "horzdown") then
-		isRtDn = true;
+		isRtorDn = true;
 	elseif (orientation == "vertleft") then
 		isVert = true;
 	elseif (orientation == "vertright") then
 		isVert = true;
-		isRtDn = true;
+		isRtorDn = true;
 	end
 	if (isVert) then
-		rootx = size;
+		Yatabar.bar:SetHeight(self.buttonSize * Yatabar.totemCount + (2*self.frameBorder));
+		Yatabar.bar:SetWidth(self.buttonSize + (2*self.frameBorder));
 	else
-		rooty = size;
+		Yatabar.bar:SetWidth(self.buttonSize * Yatabar.totemCount + (2*self.frameBorder));
+		Yatabar.bar:SetHeight(self.buttonSize + (2*self.frameBorder));
+	end
+
+	for element, spell in pairs(Yatabar.availableTotems) do
+		Yatabar:UpdateLayout(Yatabar["TotemHeader"..element], element,isVert, isRtorDn)
 	end
 end
 
-function Yatabar:UpdateLayout(frame, x,y,isVert,isRtDn)
+function Yatabar:UpdateLayout(frame, element,isVert,isRtorDn)
+	frame:ClearAllPoints();
+	if (isVert and not isRtorDn) then
+		frame:SetPoint("TOPRIGHT", Yatabar.bar,"TOPRIGHT", -Yatabar.frameBorder, -(Yatabar.orderElements[element]-1) * Yatabar.buttonSize - Yatabar.frameBorder)
+		frame:SetSize( Yatabar.buttonSize * self.availableTotems[element].count, Yatabar.buttonSize)
+	elseif isVert and isRtorDn then
+		frame:SetPoint("TOPLEFT", Yatabar.bar,"TOPLEFT", Yatabar.frameBorder, -(Yatabar.orderElements[element]-1) * Yatabar.buttonSize - Yatabar.frameBorder)
+		frame:SetSize( Yatabar.buttonSize * self.availableTotems[element].count, Yatabar.buttonSize)
+	elseif not isVert and isRtorDn then
+		frame:SetPoint("TOPLEFT", Yatabar.bar,"TOPLEFT",(Yatabar.orderElements[element]-1) * Yatabar.buttonSize + Yatabar.frameBorder, -Yatabar.frameBorder)
+		frame:SetSize(Yatabar.buttonSize, (Yatabar.buttonSize * self.availableTotems[element].count))
+	else
+		frame:SetPoint("BOTTOMLEFT", Yatabar.bar,"BOTTOMLEFT",(Yatabar.orderElements[element]-1) * Yatabar.buttonSize + Yatabar.frameBorder, Yatabar.frameBorder)
+		frame:SetSize(Yatabar.buttonSize, Yatabar.buttonSize * self.availableTotems[element].count)
+	end
+
+	if self.orderTotemsInElement[element] == nil then --wenn noch keine Reihenfolge vorhanden ist dann die Totemspells einfach durchgehen
+		for idx, spellId in ipairs(self.availableTotems[element]) do
+			if type(spellId) == "number" then
+				Yatabar:UpdateButtonLayout(frame, element,isVert,isRtorDn, idx)
+			end
+		end
+	else	--sonst nach reihenfolge
+		for spellId, idx in pairs(self.orderTotemsInElement[element]) do
+			if type(spellId) == "number" then
+				Yatabar:UpdateButtonLayout(frame, element,isVert,isRtorDn, idx)
+			end
+		end
+	end
 end
+
+function Yatabar:UpdateButtonLayout(frame, element,isVert,isRtorDn, idx)
+	frame["popupButton"..element..idx]:ClearAllPoints()
+	if (isVert and isRtorDn) then
+		frame["popupButton"..element..idx]:SetPoint("TOPLEFT", frame,"TOPLEFT",(idx - 1) * Yatabar.buttonSize, 0)
+	elseif isVert and not isRtorDn then
+		frame["popupButton"..element..idx]:SetPoint("TOPRIGHT", frame,"TOPRIGHT", -(idx - 1) * Yatabar.buttonSize, 0)
+	elseif not isVert and isRtorDn then
+		frame["popupButton"..element..idx]:SetPoint("TOPLEFT", frame,"TOPLEFT", 0,-(idx - 1) * Yatabar.buttonSize)
+	else
+		frame["popupButton"..element..idx]:SetPoint("BOTTOMLEFT", frame,"BOTTOMLEFT", 0,(idx - 1) * Yatabar.buttonSize)
+	end
+end
+
 
 function Yatabar:OnEventFunc(event, arg, element, button)
 	if ( event == "ACTIONBAR_SHOWGRID" ) then
@@ -473,7 +510,7 @@ end
 
 function Yatabar:ChatCommand(input)
 	if not input or input:trim() == "" then
-	InterfaceOptionsFrame_OpenToCategory(self.optionsFrame)
+	--InterfaceOptionsFrame_OpenToCategory(self.optionsFrame)
 	LibStub("AceConfigDialog-3.0"):Open("Yatabar")
   else
     print("console")

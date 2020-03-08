@@ -19,7 +19,7 @@ if not L then return end
 	L["Button Style"] = true 
 	L["Show short tooltip"] = true 
 	L["Orientation"] = true 
-	L["Set the orientation of the Klappa2 Bar."] = true 
+	L["Set the orientation of the bar."] = "Set the orientation of the bar." 
 	L["Horizontal, Grow Up"] = true 
 	L["Horizontal, Grow Down"] = true
 	L["Vertical, Grow Right"] = true 

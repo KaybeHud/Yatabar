@@ -7,7 +7,7 @@
 ## OptionalDeps: Masque
 ## SavedVariables: YatabarDB
 ## Title: Yet another Totem addon bar
-## Version: 4.7.5
+## Version: 0.5
 ## X-Compatible-With: 11303
 ## X-Embeds: Ace3, 
 ## X-LoadOn-Class: SHAMAN
