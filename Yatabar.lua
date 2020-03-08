@@ -97,6 +97,24 @@ function Yatabar:InitOptions()
 				order = 6,
 				func = function() print("Bild") end,
 			},
+			buttonorder = {
+				type = group,
+				args = {
+					image = {
+						name = "Button",
+						desc = "TEst Buttons",
+						image = "136040",
+						type = "execute",
+						order = 6,
+						func = function() print("Bild") end,
+					},
+					keybindingtest = {
+						type = "keybinding",
+						get = function() return true end,
+						set = function(a,b) print("binding:"a,b) end,
+					},
+				},
+			},
 		-- 	ids = {
 		-- 		name = L["Show all buttonids"],
 		-- 		desc = L["Shows all buttons with their ids"],
