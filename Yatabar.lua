@@ -80,20 +80,23 @@ function Yatabar:InitOptions()
 				},
 			},
 
-		-- 	add = {
-		-- 		name = L["Add Bar"],
-		-- 		desc = L["Add a new bar"],
-		-- 		type = "execute",
-		-- 		order = 3,
-		-- 		func = function() self:AddBar() end,
-		-- 	},
-		-- 	del = {
-		-- 		name = L["Delete Bar"],
-		-- 		desc = L["Delete the last bar"],
-		-- 		type = "execute",
-		-- 		order = 6,
-		-- 		func = function() self:DeleteBar() end,
-		-- 	},
+			order = {
+				name = "Reihenfolge",
+				desc = "Reihenfolge desc",
+				type = "multiselect",
+				order = 3,
+				values = Yatabar.orderElements,
+				get = function(table, key) print(key, table); return Yatabar:GetTotemOrder(key) end,
+				set = function(table, key) Yatabar:SetTotemOrder(key) end,
+			},
+			image = {
+				name = "Button",
+				desc = "TEst Buttons",
+				image = "136040",
+				type = "execute",
+				order = 6,
+				func = function() print("Bild") end,
+			},
 		-- 	ids = {
 		-- 		name = L["Show all buttonids"],
 		-- 		desc = L["Shows all buttons with their ids"],
@@ -394,6 +397,7 @@ function Yatabar:GetTotemSpellsByElement()
 		Yatabar.availableTotems[element] = {}
 		for idx, spell in pairs(totem) do
 			local spellname, rank, icon, castTime, minRange, maxRange, spellId = GetSpellInfo(spell["id"])
+			print("SpellInfo-Icon", icon)
 			--welche Totems sind dem Spieler bekannt:
 			spellname, rank, icon, castTime, minRange, maxRange, spellId = GetSpellInfo(spellname)
 			if spellname ~= nil then
@@ -419,6 +423,14 @@ function Yatabar:CheckOrderTotemSpells()
 			end
 		end
 	end
+end
+
+function Yatabar:GetTotemOrder(value)
+	return true
+end
+
+function Yatabar:SetTotemOrder(value)
+	print("set",value)
 end
 
 function Yatabar:GetTotemCount()
