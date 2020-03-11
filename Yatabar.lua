@@ -210,8 +210,9 @@ function Yatabar:CreateSpellPopupButton(main,index, spellId, element)
 	if MSQ then
 		main["popupButton"..element..spellId]:AddToMasque(myGroup)
 	end
-	main["popupButton"..element..spellId]:SetScript("OnDragStart", nil);
+	--main["popupButton"..element..spellId]:SetScript("OnDragStart", nil);
 	--main["popupButton"..element..spellId]:SetScript("OnReceiveDrag", function() Yatabar:isTotemFor(element); end );
+	--main["popupButton"..element..spellId]:DisableDragNDrop()
 	main["popupButton"..element..spellId]:SetScript("OnEvent", function(arg1,event) Yatabar:OnEventFunc(event, arg1, element, main["popupButton"..element..spellId]); end);
 	SecureHandlerWrapScript(main["popupButton"..element..spellId],"OnLeave",main,[[return true, ""]], [[
 		inHeader =  control:IsUnderMouse(true)
@@ -398,10 +399,13 @@ end
 
 --sortieren und wenn neue Spells verfügbar sind, diese neu hinzufügen
 function Yatabar:CheckOrderTotemSpells()
+	
 	for element, spell in pairs(Yatabar.availableTotems) do
+		local count = 1
 		for k, id in pairs(spell) do
 			if Yatabar.orderTotemsInElement[element][id] == nil and k ~= "count" then
-				Yatabar.orderTotemsInElement[element][id] = #Yatabar.orderTotemsInElement[element]+1
+				Yatabar.orderTotemsInElement[element][id] = count
+				count = count + 1
 			end
 		end
 	end
@@ -461,14 +465,15 @@ function Yatabar:AddOptionsForTotems()
 							order = 2,
 							image = icon,
 							type = "execute",
-							func = function(tbl,mousebutton) Yatabar:SetSpellOrder(tbl,mousebutton, element) end,
+							func = function(tbl,mousebutton) Yatabar:SetSpellOrder(tbl,mousebutton, element,spellId) end,
 						},
 						checkbox = {
 							name = "show",
 							order = 3,
 							type = "toggle",
+							tristate = true,
 							set = function(a,b) end,
-							get = function()return true end
+							get = function() if Yatabar.activateSpellOrder.active == true then return nil else return true end end,
 						},
 						text = {
 							type = "description",
@@ -515,36 +520,45 @@ function Yatabar:ActivateSetSpellOrder(element, tbl)
 	end
 end
 
-function Yatabar:SetSpellOrder(tbl,mousebutton, element)
+function Yatabar:SetSpellOrder(tbl,mousebutton, element, spellId)
 	if not Yatabar.activateSpellOrder.active then
 		return
 	end
 	--print("setOrder")
-	local spellname = tbl.option.name
-	spellname, rank, icon, castTime, minRange, maxRange, spellId = GetSpellInfo(spellname)
-	--print(spellname)
-	
-
 	local currentPosition = self.orderTotemsInElement[element][spellId]
 	print("oldpostion", currentPosition)
 	local newPosition = Yatabar.activateSpellOrder.order
-	print("new Position", newPosition)
-	local spellToSwitch = 0 
-	for spell, order in pairs(self.orderTotemsInElement[element]) do
-
-		if type(spell) == "number" and order == newPosition then
-			spellToSwitch = spell
-			break
-		end
-	end
-	print("selectedSpell", spellId)
-	print("switchedSpell", spellToSwitch)
-	self.orderTotemsInElement[element][spellId] = newPosition
-	self.orderTotemsInElement[element][spellToSwitch] = currentPosition
 	Yatabar.activateSpellOrder.order = Yatabar.activateSpellOrder.order+1
 	Yatabar["TotemHeader"..element]:Execute([[
 			control:Run(show)
 			]])
+	print("new Position", newPosition)
+	if newPosition == currentPosition then
+		return
+	end
+	
+	 
+	local spellToSwitch = 0 
+	local findSpellToSwitch = false
+	for spell, order in pairs(self.orderTotemsInElement[element]) do
+		print(order)
+		if type(spell) == "number" and order == newPosition then
+			spellToSwitch = spell
+			findSpellToSwitch = true
+			break	
+		end
+	end
+
+	if findSpellToSwitch == false then
+		print("no more spell to switch")
+		Yatabar:ActivateSetSpellOrder(nil, tbl)
+		return
+	end
+	--print("selectedSpell", spellId)
+	--print("switchedSpell", spellToSwitch)
+	self.orderTotemsInElement[element][spellId] = newPosition
+	self.orderTotemsInElement[element][spellToSwitch] = currentPosition
+	
 
 	--Set Position in text in Config Dialog
 	local oldSpellname = GetSpellInfo(spellToSwitch)
