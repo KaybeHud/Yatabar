@@ -54,10 +54,24 @@ local defaults =
 function Yatabar:InitOptions()
 	local options = {
 		name = Yatabar.name,
-		desc = "Totem with popup buttons",
+		desc = L["Totem with popup buttons"],
 		icon = "Interface\\Icons\\inv_banner_01",
 		type="group",
 		args = {
+			orientation = {
+				type = "select",
+				name = L["Orientation"],
+				desc = L["Set the orientation of the bar."],
+				order = 6,
+				get = function() return Yatabar.config.orientation; end,
+				set = function(info,value) Yatabar.config.orientation = value; self:SetLayout(); end,
+				values = {
+					["horzup"] = L["Horizontal, Grow Up"],
+					["horzdown"] = L["Horizontal, Grow Down"],
+					["vertright"] = L["Vertical, Grow Right"],
+					["vertleft"] = L["Vertical, Grow Left"],
+				},
+			},
 			totems = {
 				type = "group",
 				name = "Totems",
@@ -72,7 +86,7 @@ function Yatabar:InitOptions()
 end
 
 function Yatabar:OnInitialize()
-	print("Initialize")
+	--print("Initialize")
 	self.db = LibStub("AceDB-3.0"):New("YatabarDB", defaults)
 	self.config = self.db.char
 	self.orderElements = self.config.orderElements
@@ -149,7 +163,7 @@ function Yatabar:CreateBar()
 end
 
 function Yatabar:CreateTotemHeader(element)
-	print("CreateTotemHeader")
+	--print("CreateTotemHeader")
 	local frameBorder = Yatabar.frameBorder 
 	if Yatabar["TotemHeader"..element] == nil then
 		Yatabar["TotemHeader"..element] = CreateFrame("Frame", "TotemHeader"..element, Yatabar.bar, "SecureHandlerStateTemplate")
@@ -226,8 +240,7 @@ function Yatabar:CreateSpellPopupButton(main,index, spellId, element)
 	if MSQ then
 		main["popupButton"..element..spellId]:AddToMasque(myGroup)
 	end
-	--main["popupButton"..element..spellId]:SetScript("OnDragStart", nil);
-	--main["popupButton"..element..spellId]:SetScript("OnReceiveDrag", nil) --function() Yatabar:isTotemFor(element); end );
+	
 	main["popupButton"..element..spellId]:DisableDragNDrop(true)
 	main["popupButton"..element..spellId]:SetScript("OnEvent", function(arg1,event) Yatabar:OnEventFunc(event, arg1, element, main["popupButton"..element..spellId]); end);
 	SecureHandlerWrapScript(main["popupButton"..element..spellId],"OnLeave",main,[[return true, ""]], [[
@@ -343,7 +356,7 @@ function Yatabar:OnEventFunc(event, arg, element, button)
 		--button:DisableDragNDrop(true)
 	end
 	if(event == "LEARNED_SPELL_IN_TAB") then
-		print("new spell learned")
+		print("Yatabar: ", L["new spell learned"])
 		self:GetTotemSpellsByElement()
 		--self:SetOrderTotemSpells()
 		-- for element, spell in pairs(Yatabar.availableTotems) do
@@ -419,11 +432,11 @@ function Yatabar:AddOptionsForTotems()
 			text = {
 				type = "description",
 				order = 1,
-				name = "Set the order of the element:",
+				name = L["Set the order of the element"],
 				fontSize = "medium",
 			},
 			totem = {
-				name = element,
+				name = L[element],
 				desc = element,
 				type = "range",
 				order = 2,
@@ -435,15 +448,15 @@ function Yatabar:AddOptionsForTotems()
 				set = function(info,value) Yatabar:SetElementOrder(value, element); end
 			},
 			header = {
-				name = "Totem configuration",
+				name = L["Totem configuration"],
 				type = "header", 
 				fontSize = "medium",
 				order = 3,
 			},
 			activateSpellOrder = {
-				name = "Set Order",
+				name = L["Set Order"],
 				order = 4,
-				desc = "Klicke um die Reihenfolge zu setzen",
+				desc = L["Click to change order"],
 				type = "execute",
 				func = function(tbl,click) Yatabar:ActivateTotemOrder(element, tbl) end,
 			}
@@ -477,7 +490,7 @@ function Yatabar:AddOptionsForTotem(idx, element, spellId)
 					func = function(tbl,mousebutton) Yatabar:SetTotemOrder(tbl,mousebutton, element,spellId) end,
 				},
 				checkbox = {
-					name = "show",
+					name = L["show"],
 					order = 3,
 					type = "toggle",
 					tristate = true,
@@ -487,7 +500,7 @@ function Yatabar:AddOptionsForTotem(idx, element, spellId)
 				text = {
 					type = "description",
 					order = 1,
-					name = "Position "..Yatabar:GetTotemPosition(element, spellId) or 0,
+					name = L["Position "]..Yatabar:GetTotemPosition(element, spellId) or 0,
 				},
 			},
 		}
@@ -625,7 +638,7 @@ function Yatabar:SetTotemOrder(tbl,mousebutton, element, spellId)
 	end
 
 	if findSpellToSwitch == false then
-		print("no more spell to switch")
+		print("Yatatbar: ", L["no more spell to switch"])
 		Yatabar:ActivateTotemOrder(element, tbl)
 		return
 	end
@@ -660,7 +673,7 @@ end
 
 function Yatabar:toggleLock(lock)
 	if InCombatLockdown() then
-		print("function not available during combat")
+		print("Yatabar: ", L["function not available during combat"])
 		return
 	end
 	if not lock then
@@ -734,7 +747,6 @@ function Yatabar:ChatCommand(input)
 	--InterfaceOptionsFrame_OpenToCategory(self.optionsFrame)
 	LibStub("AceConfigDialog-3.0"):Open("Yatabar")
   else
-    print("console")
     LibStub("AceConfigCmd-3.0").HandleCommand(Yatabar, "yb", "Options", input)
   end
 end

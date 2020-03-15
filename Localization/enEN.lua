@@ -1,5 +1,23 @@
 local L = LibStub("AceLocale-3.0"):NewLocale("Yatabar","enUS",true)
 if not L then return end
+	L["Totem with popup buttons"] = "Totem with popup buttons"
+	L["new spell learned"] = "You have learned a new spell, check option menu"
+	L["Set the order of the element"] = "Set the order of the element:"
+	L["Totem configuration"] = "Totem configuration"
+	L["Click to change order"] = "Click to change order"
+	L["Set Order"] = "Set order"
+	L["AIR"] = "AIR"
+	L["EARTH"] = "Earth"
+	L["WATER"] = "Water"
+	L["FIRE"] = "Fire"
+	L["show"] = "show"
+	L["Position "] = "Position "
+	L["no more spell to switch"] = "No more spell to switch"
+	L["function not available during combat"] = "Function not available during combat"
+	L["Set the orientation of the bar."] = "Set the orientation of the bar." 
+	L["Left Click|r to open configuration"] = "Left Click|r to open configuration"
+	L["Right Click|r to lock/unlock bar"] = "Right Click|r to lock/unlock bar"
+
 
 	L["Hide mainbar"] = true 	
 	L["Hides the default mainbar"] = true 
@@ -19,7 +37,6 @@ if not L then return end
 	L["Button Style"] = true 
 	L["Show short tooltip"] = true 
 	L["Orientation"] = true 
-	L["Set the orientation of the bar."] = "Set the orientation of the bar." 
 	L["Horizontal, Grow Up"] = true 
 	L["Horizontal, Grow Down"] = true
 	L["Vertical, Grow Right"] = true 
@@ -59,5 +76,4 @@ if not L then return end
 	L["Show all buttonids"] = true 
 	L["Shows all buttons with their ids"] = true
 	L["no more popup button to delete"] = true
-	L["Left Click|r to open configuration"] = true
-	L["Right Click|r to lock/unlock bar"] = "Right Click|r to lock/unlock bar"
+	
