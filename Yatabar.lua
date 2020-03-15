@@ -83,6 +83,9 @@ function Yatabar:OnInitialize()
 	LibStub("AceConfig-3.0"):RegisterOptionsTable(Yatabar.name, self.options)
 	self.optionsFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions(self.name, self.name)
 	self.optionsFrameGui = LibStub("AceConfigDialog-3.0"):Open(self.name)
+	-- self.optionsFrame:HookScript("OnHide", function()
+	-- 	print("Close Option2")
+	-- end)
 	self:RegisterChatCommand("yb", "ChatCommand")
 	self:RegisterChatCommand("yatabar", "ChatCommand")
 
@@ -110,6 +113,7 @@ end
 InterfaceOptionsFrame:HookScript("OnHide", function()
     print("Close Option")
 end)
+
 
 function Yatabar:CreateBar()
 	--print("CreateBar") 
@@ -176,7 +180,6 @@ function Yatabar:CreateTotemHeader(element)
 		end
 	else	--sonst nach reihenfolge
 		for idx, spellId in pairs(self.orderTotemsInElement[element]) do
-			--print("in reihenfolge..", spellId, idx)
 			if type(spellId) == "number" and idx ~= 0 then
 				self:CreateSpellPopupButton(Yatabar["TotemHeader"..element], idx, spellId, element)
 			end
@@ -333,36 +336,19 @@ end
 
 
 function Yatabar:OnEventFunc(event, arg, element, button)
-	if ( event == "ACTIONBAR_SHOWGRID" ) then
-		if InCombatLockdown() then return end
-		if not Yatabar:isTotemFor(element) then
-			button:DisableDragNDrop(true)
-		else
-			--button:Show()
-			Yatabar["TotemHeader"..element]:Execute([[
-			control:Run(show)
-			]])
-		end
-	end
-	if ( event == "ACTIONBAR_HIDEGRID" ) then
-		if InCombatLockdown() then return end
-		button:DisableDragNDrop(false)
-		Yatabar:HidePopups()
-	end
-
 	if event == "PLAYER_REGEN_ENABLED" then
-		button:DisableDragNDrop(false)
+		--button:DisableDragNDrop(false)
 	end
 	if event == "PLAYER_REGEN_DISABLED" then
-		button:DisableDragNDrop(true)
+		--button:DisableDragNDrop(true)
 	end
 	if(event == "LEARNED_SPELL_IN_TAB") then
 		print("new spell learned")
 		self:GetTotemSpellsByElement()
-		self:SetOrderTotemSpells()
-		for element, spell in pairs(Yatabar.availableTotems) do
-			self:CreateTotemHeader(element)
-		end
+		--self:SetOrderTotemSpells()
+		-- for element, spell in pairs(Yatabar.availableTotems) do
+		-- 	self:CreateTotemHeader(element)
+		-- end
 		self:SetLayout()
 		self:AddOptionsForTotems()
 	end
@@ -380,19 +366,6 @@ function Yatabar:hasSpell(spellId)
 	end
 
 end
-
--- function Yatabar:GetTotemSpells()
--- 	countSpells = 1
--- 	for idx, totem in pairs(YatabarConfig.allTotems) do
--- 		spellname, rank, icon, castTime, minRange, maxRange, spellId = GetSpellInfo(totem["RankOneSpellID"])
--- 		--welche Totems sind dem Spieler bekannt:
--- 		spellname, rank, icon, castTime, minRange, maxRange, spellId = GetSpellInfo(spellname)
--- 		if spellname ~= nil then
--- 			Yatabar.availableTotems[countSpells] = {["SpellName"] = spellname, ["SpellId"] = spellId, ["ElementID"] = totem["ElementID"]}
--- 			countSpells = countSpells +1
--- 		end
--- 	end
--- end
 
 function Yatabar:GetTotemSpellsByElement()
 	countSpells = 1
@@ -546,7 +519,7 @@ function Yatabar:SetTotemVisibility(tbl, value, element, spellId)
 			end
 		end
 	else
-		print("weg")
+		--print("weg")
 		local isFirst = false
 		if Yatabar["TotemHeader"..element]["popupButton"..element..spellId].index == 1 then
 			isFirst = true
@@ -569,6 +542,7 @@ function Yatabar:SetTotemVisibility(tbl, value, element, spellId)
 		end
 	end
 
+	--aktualisiere den Eintrag in der Config mit der neuen Position
 	for idx, spellId in pairs(self.availableTotems[element]) do
 		if idx ~= "count" then
 			local spell = GetSpellInfo(spellId)
@@ -579,7 +553,6 @@ function Yatabar:SetTotemVisibility(tbl, value, element, spellId)
 			end
 		end
 	end
-	--Yatabar:ReorderTotems(element)
 	Yatabar:SetLayout()
 end
 
@@ -606,7 +579,6 @@ function Yatabar:ActivateTotemOrder(element, tbl)
 	else
 		Yatabar:HidePopups()
 		self.options.args.totems.args[element].args.activateSpellOrder.name = "Set Order"
-		--tbl.option.name = "Set Order"
 	end
 end
 
@@ -614,6 +586,7 @@ function Yatabar:SetTotemOrder(tbl,mousebutton, element, spellId)
 	if not Yatabar.activateSpellOrder.active then
 		return
 	end
+	local newPosition = Yatabar.activateSpellOrder.order
 	--print("setOrder")
 	local totemFound = false
 	local currentPosition = 0
@@ -628,16 +601,17 @@ function Yatabar:SetTotemOrder(tbl,mousebutton, element, spellId)
 		print("Totem not active")
 		return
 	end
+	if newPosition == currentPosition then
+		return
+	end
 	--print("oldpostion", currentPosition)
-	local newPosition = Yatabar.activateSpellOrder.order
+	
 	Yatabar.activateSpellOrder.order = Yatabar.activateSpellOrder.order+1
 	Yatabar["TotemHeader"..element]:Execute([[
 			control:Run(show)
 			]])
 	--print("new Position", newPosition)
-	if newPosition == currentPosition then
-		return
-	end
+	
 	
 	 
 	local spellToSwitch = 0 
