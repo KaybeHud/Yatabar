@@ -1,6 +1,6 @@
 ## Author: Kaybe
 ## DefaultState: enabled
-## Interface: 11303
+## Interface: 11304
 ## Notes: Shaman totem bar
 ## Notes-deDE: Totembar
 ## Dependencies: Ace3, LibActionButton-1.0, !LibTotemInfo
@@ -8,7 +8,7 @@
 ## SavedVariables: YatabarDB
 ## Title: Yet another Totem addon bar
 ## Version: 0.5
-## X-Compatible-With: 11303
+## X-Compatible-With: 11304
 ## X-Embeds: Ace3, 
 ## X-LoadOn-Class: SHAMAN
 ## X-Curse-Project-Name: Yatabar
