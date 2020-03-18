@@ -570,6 +570,10 @@ function Yatabar:SetTotemVisibility(tbl, value, element, spellId)
 end
 
 function Yatabar:SetElementOrder(newValue, element)
+	if InCombatLockdown() then
+		print("Yatabar: ", L["function not available during combat"])
+		return
+	end
 	local postionToSwitch = self.orderElements[element]
 	local elementToSwitch = "" 
 	for element, order in pairs(self.orderElements) do
@@ -584,6 +588,10 @@ function Yatabar:SetElementOrder(newValue, element)
 end
 
 function Yatabar:ActivateTotemOrder(element, tbl)
+	if InCombatLockdown() then
+		print("Yatabar: ", L["function not available during combat"])
+		return
+	end
 	Yatabar.activateSpellOrder.active = not Yatabar.activateSpellOrder.active
 	if Yatabar.activateSpellOrder.active then
 		Yatabar.activateSpellOrder.order = 1
@@ -596,6 +604,10 @@ function Yatabar:ActivateTotemOrder(element, tbl)
 end
 
 function Yatabar:SetTotemOrder(tbl,mousebutton, element, spellId)
+	if InCombatLockdown() then
+		print("Yatabar: ", L["function not available during combat"])
+		return
+	end
 	if not Yatabar.activateSpellOrder.active then
 		return
 	end
@@ -611,7 +623,7 @@ function Yatabar:SetTotemOrder(tbl,mousebutton, element, spellId)
 		end
 	end
 	if not totemFound then
-		print("Totem not active")
+		print("Yatabar: ",L["Totem not active"])
 		return
 	end
 	if newPosition == currentPosition then
@@ -750,6 +762,37 @@ function Yatabar:ChatCommand(input)
     LibStub("AceConfigCmd-3.0").HandleCommand(Yatabar, "yb", "Options", input)
   end
 end
+
+
+function Yatabar:Statusbar()
+	local statusbar = CreateFrame("StatusBar", nil, UIParent)
+	statusbar:SetPoint("CENTER", UIParent, "CENTER", -300, 300)
+	statusbar:SetWidth(200)
+	statusbar:SetHeight(20)
+	statusbar:SetStatusBarTexture("Interface\TargetingFrame\UI-StatusBar")
+	statusbar:GetStatusBarTexture():SetHorizTile(false)
+	statusbar:GetStatusBarTexture():SetVertTile(false)
+	statusbar:SetStatusBarColor(0, 0.65, 0)
+	statusbar:SetScript("OnUpdate", function(arg1,elapsed) self:TestOnUpdate(arg1,elapsed); end);
+	
+	statusbar.bg = statusbar:CreateTexture(nil, "BACKGROUND")
+	statusbar.bg:SetTexture("Interface\\TARGETINGFRAME\\UI-StatusBar")
+	statusbar.bg:SetAllPoints(true)
+	statusbar.bg:SetVertexColor(0, 0.35, 0)
+	
+	statusbar.value = statusbar:CreateFontString(nil, "OVERLAY")
+	statusbar.value:SetPoint("LEFT", statusbar, "LEFT", 4, 0)
+	statusbar.value:SetFont("Fonts\\FRIZQT__.TTF", 16, "OUTLINE")
+	statusbar.value:SetJustifyH("LEFT")
+	statusbar.value:SetShadowOffset(1, -1)
+	statusbar.value:SetTextColor(0, 1, 0)
+	statusbar.value:SetText("100%")
+end
+
+function Yatabar:TestOnUpdate(arg1, elapsed)
+	print("yatabar", arg1, elapsed)
+end
+
 
 
 

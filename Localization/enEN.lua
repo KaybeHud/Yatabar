@@ -1,6 +1,6 @@
 local L = LibStub("AceLocale-3.0"):NewLocale("Yatabar","enUS",true)
 if not L then return end
-	L["Totem with popup buttons"] = "Totem with popup buttons"
+	L["Totem with popup buttons"] = "Totem bar with popup buttons"
 	L["new spell learned"] = "You have learned a new spell, check option menu"
 	L["Set the order of the element"] = "Set the order of the element:"
 	L["Totem configuration"] = "Totem configuration"
@@ -17,6 +17,7 @@ if not L then return end
 	L["Set the orientation of the bar."] = "Set the orientation of the bar." 
 	L["Left Click|r to open configuration"] = "Left Click|r to open configuration"
 	L["Right Click|r to lock/unlock bar"] = "Right Click|r to lock/unlock bar"
+	L["Totem not active"] = "Totem is not active"
 
 
 	L["Hide mainbar"] = true 	

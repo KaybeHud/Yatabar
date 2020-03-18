@@ -1,6 +1,25 @@
 local L = LibStub("AceLocale-3.0"):NewLocale("Yatabar","deDE", false)
 if not L then return end
 
+L["Totem with popup buttons"] = "Totem-Leiste mit Popup-Buttons"
+L["new spell learned"] = "Du hast einen neuen Zauber gelernt, prüfe die Optionen"
+L["Set the order of the element"] = "Reihenfolge der Elemente festlegen:"
+L["Totem configuration"] = "Totem Konfiguration"
+L["Click to change order"] = "Klicken um die Reihenfolge zu ändern"
+L["Set Order"] = "Reihenfolge festlegen"
+L["AIR"] = "Luft"
+L["EARTH"] = "Erde"
+L["WATER"] = "Wasser"
+L["FIRE"] = "Feuer"
+L["show"] = "Anzeigen"
+L["Position "] = "Position "
+L["no more spell to switch"] = "Keine Totems mehr zum festlegen"
+L["function not available during combat"] = "Funktion ist im Kampf nicht verfügbar"
+L["Set the orientation of the bar."] = "Ver\195\164ndert die Ausrichtung der Leiste" 
+L["Left Click|r to open configuration"] = "Links Klick|r für das Konfigurationsmen\195\188"
+L["Right Click|r to lock/unlock bar"] = "Rechts Klick|r zum Sperren/Entsperren der Leiste"
+L["Totem not active"] = "Totem ist nicht aktiv"
+
 	L["Hide mainbar"] = "Standard Buttonleiste verstecken"
 	L["Hides the default mainbar"] = "Versteckt die Standard Buttonleiste"
 	L["Button Lock"] = "Kn\195\182pfe sperren"
@@ -19,7 +38,6 @@ if not L then return end
 	L["Button Style"] = "Aussehen der Kn\195\182pfe"
 	L["Show short tooltip"] = "Kurzer Tooltiptext"
 	L["Orientation"] = "Ausrichtung"
-	L["Set the orientation of the Klappa2 Bar."] = "Ver\195\164ndert die Ausrichtung der Klappa2 Bar"
 	L["Horizontal, Grow Up"] = "Horizontal, nach oben"
 	L["Horizontal, Grow Down"] = "Horizontal, nach unten" 
 	L["Vertical, Grow Right"] = "Vertikal, nach rechts" 
@@ -59,5 +77,4 @@ if not L then return end
 	L["Show all buttonids"] = "Zeige alle Button-IDs" 
 	L["Shows all buttons with their ids"] = "Zeige alle Buttons mit den entsprechenden IDs" 
 	L["no more popup button to delete"] = "Keine Popup-Button mehr zum L\195\182schen"
-	L["Left Click|r to open configuration"] = "Links Klick|r für das Konfigurationsmen\195\188"
-	L["Right Click|r to lock/unlock bar"] = "Rechts Klick|r zum Sperren/Entsperren der Leiste"
+	
