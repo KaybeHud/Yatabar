@@ -1,1 +1,3 @@
 - Update localization
+- fixed a bug, using only the totem rank 1
+- added unlock the bar in the config menu

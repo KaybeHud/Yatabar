@@ -437,7 +437,7 @@ function Yatabar:AddOptionsForTotems()
 	for element, order in pairs(self.orderElements) do
 		self.options.args.totems.args[element] = {
 			type = "group",
-			name = element,
+			name = L[element],
 			args = {}
 		}
 		self.options.args.totems.args[element].args =  {
