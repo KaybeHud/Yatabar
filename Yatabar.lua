@@ -25,8 +25,7 @@ local ldb = LibStub:GetLibrary("LibDataBroker-1.1"):NewDataObject(Yatabar.name, 
     icon = "Interface\\Icons\\inv_banner_01",
     OnClick = function(self, button)
 		if (button == "RightButton") then
-			Yatabar.isLocked = not Yatabar.isLocked
-			Yatabar:toggleLock(Yatabar.isLocked)
+			Yatabar:toggleLock()
 		else
 			LibStub("AceConfigDialog-3.0"):Open(Yatabar.name)
 		end
@@ -71,6 +70,13 @@ function Yatabar:InitOptions()
 					["vertright"] = L["Vertical, Grow Right"],
 					["vertleft"] = L["Vertical, Grow Left"],
 				},
+			},
+			lockBar = {
+				type = "toggle",
+				name = L["Lock the bar"],
+				desc = L["Lock/Unlock the bar"],
+				get = function() return Yatabar.isLocked end,
+				set = function(tbl,value) Yatabar:toggleLock() end,
 			},
 			totems = {
 				type = "group",
@@ -187,14 +193,14 @@ function Yatabar:CreateTotemHeader(element)
 
 	--prüfen ob Reihenfolge vorhanden ist
 	if self.orderTotemsInElement[element] == nil then --wenn noch keine Reihenfolge vorhanden ist dann die Totemspells einfach durchgehen
-		for idx, spellId in ipairs(self.availableTotems[element]) do
+		for idx, spellId in pairs(self.availableTotems[element]) do
 			if type(spellId) == "number" then
 				self:CreateSpellPopupButton(Yatabar["TotemHeader"..element], idx, spellId, element)
 			end
 		end
 	else	--sonst nach reihenfolge
 		for idx, spellId in pairs(self.orderTotemsInElement[element]) do
-			if type(spellId) == "number" and idx ~= 0 then
+			if  type(spellId) == "number" and idx ~= 0 then 
 				self:CreateSpellPopupButton(Yatabar["TotemHeader"..element], idx, spellId, element)
 			end
 		end
@@ -221,10 +227,12 @@ end
 
 
 function Yatabar:CreateSpellPopupButton(main,index, spellId, element)
+	--print("CreatePopups")
 	if index == 0 then
 		return
 	end
-	--print("CreatePopups")
+	
+	--print("Spellid", spellId)
 	local name = "popupButton"..element..spellId
 	if main["popupButton"..element..spellId] == nil then
 		main["popupButton"..element..spellId] = LAB:CreateButton(spellId, name , main)
@@ -368,6 +376,7 @@ function Yatabar:OnEventFunc(event, arg, element, button)
 	
 end
 
+--welche Totems sind dem Spieler bekannt:
 function Yatabar:hasSpell(spellId)
 	spellname, rank, icon, castTime, minRange, maxRange, spellId = GetSpellInfo(spellId)
 		--welche Totems sind dem Spieler bekannt:
@@ -385,13 +394,16 @@ function Yatabar:GetTotemSpellsByElement()
 	for element, totem in pairs(YatabarConfig.totems) do
 		Yatabar.availableTotems[element] = {}
 		for idx, spell in pairs(totem) do
-			local name = GetSpellInfo(spell["id"])
-			--welche Totems sind dem Spieler bekannt:
-			spellname = GetSpellInfo(name)
-			if spellname ~= nil then
-				table.insert(Yatabar.availableTotems[element],spell["id"])
-				countSpells = countSpells + 1
-			end
+			if Yatabar:hasSpell(spell["id"]) then
+				spellname,  rank_, icon, castTime, minRange, maxRange, spellId_ = GetSpellInfo(spell["id"])
+				--print("RAng",spellname, rank_, spellId_)
+				spellname, rank, icon, castTime, minRange, maxRange, spellId = GetSpellInfo(spellname)
+				--print("RAng",spellname, rank, spellId)
+				if spellname ~= nil then
+					table.insert(Yatabar.availableTotems[element],spellId) --spell["id"]) 
+					countSpells = countSpells + 1
+				end
+			end 
 		end
 		Yatabar.availableTotems[element].count = countSpells - 1
 		countSpells = 1
@@ -683,12 +695,13 @@ function Yatabar:GetTotemCount()
 	return count
 end
 
-function Yatabar:toggleLock(lock)
+function Yatabar:toggleLock()
 	if InCombatLockdown() then
 		print("Yatabar: ", L["function not available during combat"])
 		return
 	end
-	if not lock then
+	Yatabar.isLocked = not Yatabar.isLocked;
+	if not Yatabar.isLocked then
 		Yatabar.bar.overlay:SetScript("OnDragStart", function() Yatabar:StartDrag(); end);
 		Yatabar.bar.overlay:SetScript("OnDragStop", function() Yatabar:StopDrag(); end);
 		Yatabar.bar.overlay:Show();
