@@ -320,13 +320,6 @@ function Yatabar:CreateSpellPopupButton(main,index, spellId, element)
 	--main["popupButton"..element..spellId]:RegisterEvent("ACTIONBAR_HIDEGRID");
 	
 	
-	-- main["popupButton"..element..index]:Execute( [[show = [=[
-	-- 		self:Show()
-	-- 	]=] ]])
-	-- main["popupButton"..element..index]:Execute( [[hide = [=[
-	-- 		self:Hide()
-	-- 	]=] ]])
-	
 end
 
 function Yatabar:SetLayout()
@@ -430,19 +423,6 @@ function Yatabar:OnEventFunc(event, arg1, arg2, frame)
 	if event == "MODIFIER_STATE_CHANGED" then
 		if frame ~= nil and MouseIsOver(frame) then 
 			print(event,arg1, arg2, frame:GetAttribute("element"))
-			--frame:Run("show")
-			-- if arg2 ~= 0 and string.find(arg1, "ALT") then
-			-- 	print("find", frame.name)
-			-- 	--frame:Run(show)
-			-- 	popups = {frame:GetChildren()}
-			-- 	for i, button in pairs(popups) do
-			-- 		print(i, button)
-			-- 		if button:GetAttribute("index") ~= 0 then
-			-- 			print("index")
-			-- 			button:Show()
-			-- 		end
-			-- 	end
-			-- end
 		end
 	end
 	
@@ -467,12 +447,10 @@ function Yatabar:GetTotemSpellsByElement()
 		Yatabar.availableTotems[element] = {}
 		for idx, spell in pairs(totem) do
 			if Yatabar:hasSpell(spell["id"]) then
-				spellname,  rank_, icon, castTime, minRange, maxRange, spellId_ = GetSpellInfo(spell["id"])
-				--print("RAng",spellname, rank_, spellId_)
+				spellname = GetSpellInfo(spell["id"])
 				spellname, rank, icon, castTime, minRange, maxRange, spellId = GetSpellInfo(spellname)
-				--print("RAng",spellname, rank, spellId)
 				if spellname ~= nil then
-					table.insert(Yatabar.availableTotems[element],spellId) --spell["id"]) 
+					table.insert(Yatabar.availableTotems[element],spellId) --spellId hat jetzt den höchsten Rang 
 					countSpells = countSpells + 1
 				end
 			end 
@@ -864,9 +842,9 @@ end
 
 function Yatabar:Statusbar()
 	local statusbar = CreateFrame("StatusBar", nil, UIParent)
-	statusbar:SetPoint("CENTER", UIParent, "CENTER", -300, 300)
-	statusbar:SetWidth(200)
-	statusbar:SetHeight(20)
+	statusbar:SetPoint("TOPLEFT", Yatabar["TotemHeader"..AIR], "BOTTOMLEFT", 0, 0)
+	statusbar:SetWidth(Yatabar.buttonSize)
+	statusbar:SetHeight(15)
 	statusbar:SetStatusBarTexture("Interface\TargetingFrame\UI-StatusBar")
 	statusbar:GetStatusBarTexture():SetHorizTile(false)
 	statusbar:GetStatusBarTexture():SetVertTile(false)
