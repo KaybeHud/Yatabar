@@ -20,6 +20,10 @@ L["Left Click|r to open configuration"] = "Links Klick|r für das Konfigurations
 L["Right Click|r to lock/unlock bar"] = "Rechts Klick|r zum Sperren/Entsperren der Leiste"
 L["Totem not active"] = "Totem ist nicht aktiv"
 L["Lock/Unlock the bar"] = "Sperren/Entsperren der Leiste"
+L["Shift-key"] = "Shift-Taste"
+L["Alt-key"] = "Alt-Taste"
+L["Control-key"] = "Strg-Taste"
+L["no key"] = "keine Taste"
 
 	L["Hide mainbar"] = "Standard Buttonleiste verstecken"
 	L["Hides the default mainbar"] = "Versteckt die Standard Buttonleiste"

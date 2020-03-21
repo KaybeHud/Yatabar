@@ -9,6 +9,7 @@ Yatabar.buttonSize = 36
 Yatabar.name = "Yatabar"
 Yatabar.frameBorder = 8
 Yatabar.availableTotems = {}
+Yatabar.popupKey = "nokey"
 Yatabar.isLocked = true
 Yatabar.activateSpellOrder = {active = false, element = "", order = 1}
 Yatabar.orderElements = {}
@@ -47,6 +48,7 @@ local defaults =
 		orderTotemsInElement = {["EARTH"] = {}, ["WATER"] = {}, ["FIRE"] = {}, ["AIR"] = {}},
 		orientation = "horzup",
 		padding = 0,
+		popupKey = "nokey",
 	}
 }
 
@@ -78,6 +80,18 @@ function Yatabar:InitOptions()
 				get = function() return Yatabar.isLocked end,
 				set = function(tbl,value) Yatabar:toggleLock() end,
 			},
+			keybind = {
+				type = "select",
+				name = "Set popup key",
+				get = function() return Yatabar.popupKey end,
+				set = function(info, value) Yatabar:SetPopupKey(value) end,
+				values = {
+					["nokey"] = L["no key"],
+					["shift"] = L["Shift-key"],
+					["alt"] = L["Alt-key"],
+					["control"] = L["Control-key"],
+				},
+			}, 
 			totems = {
 				type = "group",
 				name = "Totems",
@@ -97,6 +111,7 @@ function Yatabar:OnInitialize()
 	self.config = self.db.char
 	self.orderElements = self.config.orderElements
 	self.orderTotemsInElement = self.config.orderTotemsInElement
+	self.popupKey = self.config.popupKey
 
 	self.options = self:InitOptions()
 
@@ -139,6 +154,7 @@ function Yatabar:CreateBar()
 	--print("CreateBar") 
 	Yatabar.bar = CreateFrame("Frame", "YatabarBar", UIParent)
 	Yatabar.bar:SetPoint("CENTER", -300,0)
+	Yatabar.bar.name = "Yatabar.bar"
 
 	Yatabar.bar:SetWidth(self.buttonSize * Yatabar.totemCount + (2*self.frameBorder));
 	Yatabar.bar:SetHeight(self.buttonSize + (2*self.frameBorder));
@@ -164,6 +180,8 @@ function Yatabar:CreateBar()
 	Yatabar.bar:RegisterEvent("LEARNED_SPELL_IN_TAB")
 	Yatabar.bar:RegisterEvent("PLAYER_REGEN_DISABLED")
 	Yatabar.bar:RegisterEvent("PLAYER_REGEN_ENABLED")
+	--Yatabar.bar:RegisterEvent("MODIFIER_STATE_CHANGED")
+	Yatabar.bar:SetScript("OnEvent", function(frame,event, arg1, arg2) Yatabar:OnEventFunc(event, arg1, arg2, frame); end);
 	
 	Yatabar.bar:Show()
 end
@@ -174,9 +192,26 @@ function Yatabar:CreateTotemHeader(element)
 	if Yatabar["TotemHeader"..element] == nil then
 		Yatabar["TotemHeader"..element] = CreateFrame("Frame", "TotemHeader"..element, Yatabar.bar, "SecureHandlerStateTemplate")
 	end
+	Yatabar["TotemHeader"..element].name = "TotemHeader"..element
+	Yatabar["TotemHeader"..element]:SetAttribute("key", self.popupKey)
+	Yatabar["TotemHeader"..element]:SetAttribute("element", element)
 	Yatabar["TotemHeader"..element]:SetPoint("BOTTOMLEFT", Yatabar.bar,"BOTTOMLEFT",(self.orderElements[element]-1) * Yatabar.buttonSize + frameBorder, frameBorder)
 	Yatabar["TotemHeader"..element]:SetSize(Yatabar.buttonSize, Yatabar.buttonSize * self.availableTotems[element].count)
-	
+	--Yatabar["TotemHeader"..element]:RegisterEvent("MODIFIER_STATE_CHANGED")
+	--Yatabar["TotemHeader"..element]:SetScript("OnEvent", function(frame,event, arg1, arg2) Yatabar:OnEventFunc(event, arg1, arg2, frame); end);
+
+	Yatabar["TotemHeader"..element]:SetAttribute("_onstate-mouseover", [[ 
+		key = self:GetAttribute("key")
+		if self:IsUnderMouse(true) then
+			if (key == "alt" and IsAltKeyDown()) or (key == "shift" and IsShiftKeyDown()) or (key == "control" and IsControlKeyDown()) then
+				self:Run(show);
+			end
+		end 
+		]]
+	)
+	RegisterStateDriver(Yatabar["TotemHeader"..element], "mouseover", "[modifier:shift/ctrl/alt] key; no")
+
+
 	-- Yatabar["TotemHeader"..element]:SetBackdrop({
 	-- 	bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
 	-- 		tile = true,
@@ -250,7 +285,7 @@ function Yatabar:CreateSpellPopupButton(main,index, spellId, element)
 	end
 	
 	main["popupButton"..element..spellId]:DisableDragNDrop(true)
-	main["popupButton"..element..spellId]:SetScript("OnEvent", function(arg1,event) Yatabar:OnEventFunc(event, arg1, element, main["popupButton"..element..spellId]); end);
+	--main["popupButton"..element..spellId]:SetScript("OnEvent", function(arg1,event) Yatabar:OnEventFunc(event, arg1, element, main["popupButton"..element..spellId]); end);
 	SecureHandlerWrapScript(main["popupButton"..element..spellId],"OnLeave",main,[[return true, ""]], [[
 		inHeader =  control:IsUnderMouse(true)
 		if not inHeader then
@@ -259,8 +294,27 @@ function Yatabar:CreateSpellPopupButton(main,index, spellId, element)
 	]])
 
 	SecureHandlerWrapScript(main["popupButton"..element..spellId],"OnEnter",main, [[
-		control:Run(show);
+		key = control:GetAttribute("key")
+		if key == "nokey" or (key == "alt" and IsAltKeyDown()) or (key == "shift" and IsShiftKeyDown()) or (key == "control" and IsControlKeyDown()) then
+			control:Run(show);
+		end
 		]]);
+
+	-- main["popupButton"..element..spellId]:SetAttribute("_onstate-mouseover", [[ 
+	-- 	print("mouseover")
+	-- 	if self:GetAttribute("index") ~= 1 then
+	-- 		return
+	-- 	end
+	-- 	key = control:GetAttribute("key")
+	-- 	print(key)
+	-- 	if self:IsUnderMouse(true) then
+	-- 		if (key == "alt" and IsAltKeyDown()) or (key == "shift" and IsShiftKeyDown()) or (key == "control" and IsControlKeyDown()) then
+	-- 			self:Run(show);
+	-- 		end
+	-- 	end 
+	-- 	]]
+	-- )
+	-- RegisterStateDriver(main["popupButton"..element..spellId], "mouseover", "[modifier:shift/ctrl/alt] key; no")
 
 	--main["popupButton"..element..spellId]:RegisterEvent("ACTIONBAR_SHOWGRID");
 	--main["popupButton"..element..spellId]:RegisterEvent("ACTIONBAR_HIDEGRID");
@@ -356,7 +410,7 @@ function Yatabar:UpdateButtonLayout(frame, element,isVert,isRtorDn, idx, spellId
 end
 
 
-function Yatabar:OnEventFunc(event, arg, element, button)
+function Yatabar:OnEventFunc(event, arg1, arg2, frame)
 	if event == "PLAYER_REGEN_ENABLED" then
 		--button:DisableDragNDrop(false)
 	end
@@ -372,6 +426,24 @@ function Yatabar:OnEventFunc(event, arg, element, button)
 		-- end
 		self:SetLayout()
 		self:AddOptionsForTotems()
+	end
+	if event == "MODIFIER_STATE_CHANGED" then
+		if frame ~= nil and MouseIsOver(frame) then 
+			print(event,arg1, arg2, frame:GetAttribute("element"))
+			--frame:Run("show")
+			-- if arg2 ~= 0 and string.find(arg1, "ALT") then
+			-- 	print("find", frame.name)
+			-- 	--frame:Run(show)
+			-- 	popups = {frame:GetChildren()}
+			-- 	for i, button in pairs(popups) do
+			-- 		print(i, button)
+			-- 		if button:GetAttribute("index") ~= 0 then
+			-- 			print("index")
+			-- 			button:Show()
+			-- 		end
+			-- 	end
+			-- end
+		end
 	end
 	
 end
@@ -710,6 +782,19 @@ function Yatabar:toggleLock()
 		Yatabar.bar.overlay:SetScript("OnDragStop", nil);
 		Yatabar.bar.overlay:Hide();
 	end
+end
+
+function Yatabar:SetPopupKey(key)
+	if InCombatLockdown() then
+		print("Yatabar: ", L["function not available during combat"])
+		return
+	end
+	Yatabar.popupKey = key
+	self.config.popupKey = key
+	for element, spell in pairs(Yatabar.availableTotems) do
+		Yatabar["TotemHeader"..element]:SetAttribute("key", key)
+	end
+
 end
 
 function Yatabar:StartDrag()

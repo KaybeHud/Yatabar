@@ -18,6 +18,10 @@ if not L then return end
 	L["Left Click|r to open configuration"] = "Left Click|r to open configuration"
 	L["Right Click|r to lock/unlock bar"] = "Right Click|r to lock/unlock bar"
 	L["Totem not active"] = "Totem is not active"
+	L["Shift-key"] = "Shift-key"
+	L["Alt-key"] = "Alt-key"
+	L["Control-key"] = "Control-key"
+	L["no key"]  = "no key"
 
 
 	L["Hide mainbar"] = true 	
