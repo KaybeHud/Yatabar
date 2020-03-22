@@ -1,2 +1,7 @@
-- show popups on keypress
+!! -  If you have used a earlier version, I recommend to delete the Yatabar.lua and Yatabar.lua.bak in your SavedVariables folder:
+ ...World of Warcraft\_classic_\WTF\Account\... search it in the subfolders, the place is maybe different on your computer
+ 
+- show popups on keypress (set up key in config menu)
+- add totemtimers
+- changes savefile
 

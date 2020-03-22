@@ -3,9 +3,16 @@ if select(2, UnitClass('player')) ~= "SHAMAN" then
 end
 
 
+local TotemItems = {
+	[EARTH_TOTEM_SLOT] = 5175,
+	[FIRE_TOTEM_SLOT] = 5176,
+	[WATER_TOTEM_SLOT] = 5177,
+	[AIR_TOTEM_SLOT] = 5178,
+}
+
 Yatabar = LibStub("AceAddon-3.0"):NewAddon("Yatabar", "AceConsole-3.0")
 local LAB = LibStub("LibActionButton-1.0")
-Yatabar.firstRun = true
+Yatabar.spellLoaded = false
 Yatabar.totemCount = 0 
 Yatabar.buttonSize = 36
 Yatabar.scale = Yatabar.buttonSize / 36
@@ -23,7 +30,7 @@ Yatabar.orderElements = {}
 Yatabar.orderTotemsInElement = {["EARTH"] = {}, ["WATER"] = {}, ["FIRE"] = {}, ["AIR"] = {}}
 local _G = getfenv(0)
 local L = LibStub("AceLocale-3.0"):GetLocale(Yatabar.name, true)
-local GetTotemInfo = LibStub("LibTotemInfo-1.0").GetTotemInfo
+--local GetTotemInfo = LibStub("LibTotemInfo-1.0").GetTotemInfo
 local MSQ = LibStub("Masque", true)
 local myGroup = {}
 
@@ -162,8 +169,10 @@ end
 function Yatabar:OnEnable()
 	self.totemCount = self:GetTotemCount()
 	self:CreateBar()
+	self:LoadPosition()
+	self:GetTotemSpellsByElement()
 	
-	print("Enabled")
+	--print("Enabled")
 end
 
 InterfaceOptionsFrame:HookScript("OnHide", function()
@@ -294,10 +303,10 @@ function Yatabar:CreateSpellPopupButton(main,index, spellId, element, spellname)
 		return
 	end
 	
-	print("Spellid", spellname, spellId)
+	--print("Spellid", spellname, spellId)
 	local name = "popupButton"..element..spellname
 	if main["popupButton"..element..spellname] == nil then
-		main["popupButton"..element..spellname] = LAB:CreateButton(index, name , main)
+		main["popupButton"..element..spellname] = LAB:CreateButton(name, name , main)
 	main["popupButton"..element..spellname].name = name
 	end
 	main["popupButton"..element..spellname]:ClearAllPoints()
@@ -355,6 +364,24 @@ function Yatabar:CreateSpellPopupButton(main,index, spellId, element, spellname)
 	--main["popupButton"..element..spellId]:RegisterEvent("ACTIONBAR_HIDEGRID");
 	
 	
+end
+
+function Yatabar:UpdatePopupButton(button, index, spellId, element)
+	if index == 0 then
+		return
+	end
+	button:ClearAllPoints()
+	button.spellId = spellId
+	button.index = index
+	button.element = element
+	button:SetPoint("BOTTOMLEFT", main,"BOTTOMLEFT", 0,(index - 1) * Yatabar.buttonSize)
+	button:ClearStates()
+	button:SetAttribute('state', "spell1")
+	button:SetAttribute('index', index)
+	button:SetState("spell1", nil, nil)
+	button:SetState("spell1", "spell", spellId)
+	--print(button:GetAction("spell1"))
+	--button:ButtonContentsChanged("spell1", "spell", spellId)
 end
 
 function Yatabar:SetLayout()
@@ -464,19 +491,20 @@ end
 
 function Yatabar:OnEventFunc(frame, event, arg1, ...)
 	if event == "PLAYER_ENTERING_WORLD" or event == "LEARNED_SPELL_IN_TAB" or event == "PLAYER_ALIVE" or event == "PLAYER_LEVEL_UP"   then
-		print(event)
+		--print(event)
 		spellname, rank, icon, castTime, minRange, maxRange, spellId = GetSpellInfo(8071)
-		print(spellname, spellId)
+		--print(spellname, spellId)
 		spellname, rank, icon, castTime, minRange, maxRange, spellId = GetSpellInfo(spellname) 
-		print(spellname, spellId)
+		--print(spellname, spellId)
 	end
 	if event == "SPELLS_CHANGED" then
 		print(event)
+		Yatabar.spellLoaded = true
 		--if Yatabar.firstRun == false then
 		self:GetTotemSpellsByElement()
 		self:SetOrderTotemSpells()
 		
-		--self:LoadPosition()
+		
 		--self:GetTotemSpells()
 		for element, spell in pairs(Yatabar.availableTotems) do
 			self:CreateTotemHeader(element)
@@ -489,18 +517,13 @@ function Yatabar:OnEventFunc(frame, event, arg1, ...)
 		--end
 	end
 	if event == "VARIABLES_LOADED" then
-		print(event)
+		--print(event)
 	end
 	if event == "SPELL_UPDATE_USABLE" then
 		--print(event)
-		if Yatabar.firstRun == true then
-			
-			Yatabar.firstRun = false
-		end
-
 	end
 	if event == "PLAYER_LOGIN" or event == "ADDON_LOADED" then
-		print(event)	
+		--print(event)	
 	end
 	if event == "PLAYER_REGEN_ENABLED" then
 		--button:DisableDragNDrop(false)
@@ -857,10 +880,14 @@ end
 
 function Yatabar:GetTotemCount()
 	count = 0
-	for i =1, 4 do 
-		haveTotem, totemName = GetTotemInfo(i)
+	for idx, elem in pairs(TotemItems) do 
+		if (elem) then
+			local totemItem = GetItemCount(elem)
+			haveTotem = (totemItem and totemItem > 0) and true or false
+		end
+		--haveTotem, totemName = GetTotemInfo(i)
 		if haveTotem then
-			print(totemName)
+			--print(totemName)
 			count = count + 1
 		end
 	end

@@ -1,2 +1,3 @@
 package-as: Yatabar
 manual-changelog: CHANGES.txt
+required-dependencies: Ace3, LibActionButton-1.0

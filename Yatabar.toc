@@ -3,7 +3,7 @@
 ## Interface: 11304
 ## Notes: Shaman totem bar
 ## Notes-deDE: Totembar
-## Dependencies: Ace3, LibActionButton-1.0, !LibTotemInfo
+## Dependencies: Ace3, LibActionButton-1.0
 ## OptionalDeps: Masque
 ## SavedVariables: YatabarDB
 ## Title: Yet another Totem addon bar
