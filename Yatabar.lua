@@ -498,7 +498,7 @@ function Yatabar:OnEventFunc(frame, event, arg1, ...)
 		--print(spellname, spellId)
 	end
 	if event == "SPELLS_CHANGED" then
-		print(event)
+		--print(event)
 		Yatabar.spellLoaded = true
 		--if Yatabar.firstRun == false then
 		self:GetTotemSpellsByElement()
