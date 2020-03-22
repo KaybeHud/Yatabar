@@ -24,8 +24,8 @@ Yatabar.availableTotems = {}
 Yatabar.popupKey = "nokey"
 Yatabar.isLocked = true
 Yatabar.activateSpellOrder = {active = false, element = "", order = 1}
-Yatabar.activTotemTimer = {}
-Yatabar.activTotemStartTime = {}
+Yatabar.activeTotemTimer = {}
+Yatabar.activeTotemStartTime = {}
 Yatabar.orderElements = {}
 Yatabar.orderTotemsInElement = {["EARTH"] = {}, ["WATER"] = {}, ["FIRE"] = {}, ["AIR"] = {}}
 local _G = getfenv(0)
@@ -217,7 +217,7 @@ function Yatabar:CreateBar()
 	Yatabar.bar:RegisterEvent("LEARNED_SPELL_IN_TAB")
 	Yatabar.bar:RegisterEvent("PLAYER_REGEN_DISABLED")
 	Yatabar.bar:RegisterEvent("PLAYER_REGEN_ENABLED")
-	Yatabar.bar:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", "player");
+	--Yatabar.bar:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", "player");
 	Yatabar.bar:RegisterEvent("PLAYER_DEAD");
 	--Yatabar.bar:RegisterEvent("MODIFIER_STATE_CHANGED")
 	Yatabar.bar:SetScript("OnEvent", function(frame,event, ...) Yatabar:OnEventFunc(frame, event, ...); end);
@@ -531,8 +531,7 @@ function Yatabar:OnEventFunc(frame, event, arg1, ...)
 	end
 	if event == "PLAYER_LOGIN" or event == "ADDON_LOADED" then
 		--print(event)	
-	end
-	if event == "PLAYER_REGEN_ENABLED" then
+	elseif event == "PLAYER_REGEN_ENABLED" then
 		--button:DisableDragNDrop(false)
 	
 	elseif event == "PLAYER_REGEN_DISABLED" then
@@ -556,6 +555,21 @@ function Yatabar:OnEventFunc(frame, event, arg1, ...)
 		--print(arg1)
 		if arg1 == "player" then
 			Yatabar:StartTimer(self, ...);
+		end
+	elseif event == "PLAYER_DEAD" then
+		for element, spell in pairs(Yatabar.activeTotemTimer) do
+			button = _G["popupButton"..element..spell.name:gsub("%s+", "")];
+			if button ~= nil then
+				button:SetChecked(false);
+			end
+			if Yatabar.activeTotemStartTime[element] ~= nil then
+				Yatabar.activeTotemStartTime[element] = nil;
+				countdown = Yatabar["TotemHeader"..element].statusbar;
+				if countdown then
+					countdown:SetValue(0);
+					countdown.value:SetText("")
+				end
+			end
 		end
 	end	
 end
@@ -1025,8 +1039,8 @@ function Yatabar:StartTimer(self, guid, spellId)
 
 	if founded then
 		Yatabar["TotemHeader"..element].statusbar:SetMinMaxValues(0, duration);
-		Yatabar.activTotemTimer[element] = {["id"] = spellId, ["duration"] = duration, ["name"] = name};
-		Yatabar.activTotemStartTime[element] = startTime
+		Yatabar.activeTotemTimer[element] = {["id"] = spellId, ["duration"] = duration, ["name"] = name};
+		Yatabar.activeTotemStartTime[element] = startTime
 
 	-- 	if countdown and not self.hideCooldowns then
 	-- 		countdown:SetStatusBarColor(unpack(SCHOOL_COLORS));
@@ -1076,7 +1090,7 @@ function OnUpdate(arg1, elapsed)
 	local i;
 
 	
-	for element, spell in pairs(Yatabar.activTotemTimer) do
+	for element, spell in pairs(Yatabar.activeTotemTimer) do
 			button = _G["popupButton"..element..spell.name:gsub("%s+", "")];
 			if button == nil then
 				--print("kein button:"..element..spell.id)
@@ -1084,12 +1098,12 @@ function OnUpdate(arg1, elapsed)
 			end
 
 			isActive = false;
-		if Yatabar.activTotemStartTime[element] ~= nil then
+		if Yatabar.activeTotemStartTime[element] ~= nil then
 
 			countdown = Yatabar["TotemHeader"..element].statusbar;
 			if countdown then
 				
-				timeleft = Yatabar.activTotemStartTime[element]
+				timeleft = Yatabar.activeTotemStartTime[element]
 				--if not self.hideCooldowns then
 					_, duration = countdown:GetMinMaxValues();
 
@@ -1101,12 +1115,12 @@ function OnUpdate(arg1, elapsed)
 					countdown:SetValue(timeleft);
 					countdown.value:SetText(math.floor(timeleft))
 				else
-					Yatabar.activTotemStartTime[element] = nil;
+					Yatabar.activeTotemStartTime[element] = nil;
 					countdown:SetValue(0);
 					countdown.value:SetText("")
 				end
 			else
-				isActive = Yatabar.activTotemStartTime[element] ~= 0;
+				isActive = Yatabar.activeTotemStartTime[element] ~= 0;
 				print("isActive:",isActive)
 			end
 
