@@ -24,6 +24,8 @@ L["Shift-key"] = "Shift-Taste"
 L["Alt-key"] = "Alt-Taste"
 L["Control-key"] = "Strg-Taste"
 L["no key"] = "keine Taste"
+L["buttonsize"] = "Button Gr\195\182sse"
+L["buttonsize desc"] = "Stell die Gr\195\182sse der Buttons ein"
 
 	L["Hide mainbar"] = "Standard Buttonleiste verstecken"
 	L["Hides the default mainbar"] = "Versteckt die Standard Buttonleiste"

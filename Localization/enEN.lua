@@ -22,6 +22,8 @@ if not L then return end
 	L["Alt-key"] = "Alt-key"
 	L["Control-key"] = "Control-key"
 	L["no key"]  = "no key"
+	L["buttonsize"] = "Button size"
+	L["buttonsize desc"] = "Set the size of the buttons"
 
 
 	L["Hide mainbar"] = true 	
