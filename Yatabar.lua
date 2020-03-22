@@ -55,6 +55,8 @@ local ldb = LibStub:GetLibrary("LibDataBroker-1.1"):NewDataObject(Yatabar.name, 
 	end,
 })
 
+local icon = LibStub("LibDBIcon-1.0")
+
 local defaults = 
 {
 	char = {
@@ -64,6 +66,7 @@ local defaults =
 		padding = 0,
 		popupKey = "nokey",
 		buttonSize = 36, 
+		minimap = { hide = false, }
 	}
 }
 
@@ -149,6 +152,9 @@ function Yatabar:OnInitialize()
 	self.orderTotemsInElement = self.config.orderTotemsInElement
 	self.buttonSize = self.config.buttonSize
 	self.popupKey = self.config.popupKey
+	if icon then
+		icon:Register(Yatabar.name, ldb, Yatabar.config.minimapIcon)
+	end
 
 	self.options = self:InitOptions()
 
@@ -165,6 +171,7 @@ function Yatabar:OnInitialize()
 		myGroup = MSQ:Group(self.name,nil, true)
 	end
 end
+
 
 function Yatabar:OnEnable()
 	self.totemCount = self:GetTotemCount()

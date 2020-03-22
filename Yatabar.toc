@@ -4,7 +4,7 @@
 ## Notes: Shaman totem bar
 ## Notes-deDE: Totembar
 ## Dependencies: Ace3, LibActionButton-1.0
-## OptionalDeps: Masque
+## OptionalDeps: Masque, LibDataBroker-1.1, LibDBIcon-1.0
 ## SavedVariables: YatabarDB
 ## Title: Yet another Totem addon bar
 ## Version: 0.5

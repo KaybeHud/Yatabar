@@ -5,3 +5,5 @@ required-dependencies:
   - LibActionButton-1.0
 optional-dependencies:
   - Masque
+  - LibDataBroker-1.1
+  - LibDBIcon-1.0
