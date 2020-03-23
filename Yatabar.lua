@@ -28,6 +28,7 @@ Yatabar.activeTotemTimer = {}
 Yatabar.activeTotemStartTime = {}
 Yatabar.orderElements = {}
 Yatabar.orderTotemsInElement = {["EARTH"] = {}, ["WATER"] = {}, ["FIRE"] = {}, ["AIR"] = {}}
+Yatabar.hideTimerBars = false
 local _G = getfenv(0)
 local L = LibStub("AceLocale-3.0"):GetLocale(Yatabar.name, true)
 --local GetTotemInfo = LibStub("LibTotemInfo-1.0").GetTotemInfo
@@ -256,19 +257,7 @@ function Yatabar:CreateTotemHeader(element)
 	RegisterStateDriver(Yatabar["TotemHeader"..element], "mouseover", "[modifier:shift/ctrl/alt] key; no")
 
 
-	-- Yatabar["TotemHeader"..element]:SetBackdrop({
-	-- 	bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
-	-- 		tile = true,
-	-- 		tileSize = 1,
-	-- 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-	-- 		edgeSize = 0,
-	-- 		insets = {left = 0, right = 0, top = 0, bottom = 0}
-	-- })
-	
-	-- Yatabar["TotemHeader"..element]:SetBackdropColor(0, 0, 1, 1)
-	-- Yatabar["TotemHeader"..element]:SetBackdropBorderColor(0.5, 0.5, 0, 0)
-
-	-- Yatabar["TotemHeader"..element]:Show()
+	-- w
 
 	--prüfen ob Reihenfolge vorhanden ist
 	if self.orderTotemsInElement[element] == nil then --wenn noch keine Reihenfolge vorhanden ist dann die Totemspells einfach durchgehen
@@ -614,19 +603,24 @@ end
 
 --Auflistung/Sortierung der Totems in Reihenfolge
 function Yatabar:SetOrderTotemSpells()
+	local firstFill = false
+
 	for element, spells in pairs(Yatabar.availableTotems) do
 		local count = 1
+		if Yatabar.orderTotemsInElement[element] == nil then
+			firstFill = true
+		end
 		for k, spell in pairs(spells) do
 			if k ~= "count" then 
 				local found = false
 				for idx, spellOrdered in pairs(Yatabar.orderTotemsInElement[element]) do
-					if spellOrdered.name  == spell.name then
+					if spellOrdered.name  == spell.name then	--update spell
 						Yatabar.orderTotemsInElement[element][idx].id = spell.id
 						found = true
 						break
 					end
 				end
-				if found ~= true then
+				if found ~= true and firstFill == true then   --add new  spell
 					table.insert(Yatabar.orderTotemsInElement[element],spell)
 					found = false
 				end	
@@ -635,6 +629,7 @@ function Yatabar:SetOrderTotemSpells()
 			-- 	table.insert(Yatabar.orderTotemsInElement[element],spell)
 			-- 	count = count + 1
 			-- end
+			firstFill = false
 		end
 	end
 end
@@ -748,11 +743,12 @@ function Yatabar:IsTotemVisible(element, spellId)
 end
 
 function Yatabar:SetTotemVisibility(tbl, value, element, spellId, spellname)
-	print(spellId)
+	--print(spellId)
 	--local spellname = GetSpellInfo(spellId)
+	spllnm = spellname:gsub("%s+", "")
 	if value == true then
 		table.insert(self.orderTotemsInElement[element],{["id"] = spellId, ["name"] = spellname})
-			self:CreateSpellPopupButton(Yatabar["TotemHeader"..element], #self.orderTotemsInElement[element], spellId, element)
+			self:CreateSpellPopupButton(Yatabar["TotemHeader"..element], #self.orderTotemsInElement[element], spellId, element, spllnm)
 		for k,v in pairs (tbl.options.args.totems.args[element].args) do
 			if v.name == spellname then
 				v.args.text.name = "Position "..#self.orderTotemsInElement[element]
@@ -762,7 +758,7 @@ function Yatabar:SetTotemVisibility(tbl, value, element, spellId, spellname)
 	else
 		--print("weg")
 		local isFirst = false
-		spllnm = spellname:gsub("%s+", "")
+		
 		if Yatabar["TotemHeader"..element]["popupButton"..element..spllnm].index == 1 then
 			isFirst = true
 		end
@@ -988,21 +984,21 @@ function Yatabar:SetButtonSize(size)
 	Yatabar:SetLayout()
 end
 
-function Yatabar:isTotemFor(element)
-	infoType, spell = GetCursorInfo()
-	skillType, spellID = GetSpellBookItemInfo(spell, BOOKTYPE_SPELL)
-	if infoType == "spell" then 
-		if Yatabar:hasSpell(spellID) then
-			for index, spell in pairs(Yatabar.orderTotemsInElement[element]) do
-				if spell.id == spellID then
-					return true
-				end
-			end
-		end
-	end
-	return false
-	--self:SaveTotemSpellOrder(element)
-end
+-- function Yatabar:isTotemFor(element)
+-- 	infoType, spell = GetCursorInfo()
+-- 	skillType, spellID = GetSpellBookItemInfo(spell, BOOKTYPE_SPELL)
+-- 	if infoType == "spell" then 
+-- 		if Yatabar:hasSpell(spellID) then
+-- 			for index, spell in pairs(Yatabar.orderTotemsInElement[element]) do
+-- 				if spell.id == spellID then
+-- 					return true
+-- 				end
+-- 			end
+-- 		end
+-- 	end
+-- 	return false
+-- 	--self:SaveTotemSpellOrder(element)
+-- end
 
 function Yatabar:LoadPosition()
 	local scale = self.db.char.scale
