@@ -2,6 +2,8 @@
  ...World of Warcraft\_classic_\WTF\Account\... search it in the subfolders, the place is maybe different on your computer
 
 
+- fixed bug: hidden totems are visible again after relog
+----------------------
 - fixed bug: timer doesnt start
 ----------------------
 - add minimap icon
