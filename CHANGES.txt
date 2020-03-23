@@ -4,6 +4,7 @@
 
 - add minimap icon
 - remove timer when player is dead
+- bugfix problem with setting orientation 
 
 -----------------------
 - show popups on keypress (set up key in config menu)
