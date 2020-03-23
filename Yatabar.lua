@@ -217,7 +217,7 @@ function Yatabar:CreateBar()
 	Yatabar.bar:RegisterEvent("LEARNED_SPELL_IN_TAB")
 	Yatabar.bar:RegisterEvent("PLAYER_REGEN_DISABLED")
 	Yatabar.bar:RegisterEvent("PLAYER_REGEN_ENABLED")
-	--Yatabar.bar:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", "player");
+	Yatabar.bar:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", "player");
 	Yatabar.bar:RegisterEvent("PLAYER_DEAD");
 	--Yatabar.bar:RegisterEvent("MODIFIER_STATE_CHANGED")
 	Yatabar.bar:SetScript("OnEvent", function(frame,event, ...) Yatabar:OnEventFunc(frame, event, ...); end);
@@ -553,7 +553,8 @@ function Yatabar:OnEventFunc(frame, event, arg1, ...)
 		if frame ~= nil and MouseIsOver(frame) then 
 			print(event,arg1, frame:GetAttribute("element"))
 		end
-	elseif event == "UNIT_SPELLCAST_SUCCEEDED" then
+	end
+	if event == "UNIT_SPELLCAST_SUCCEEDED" then
 		--print(arg1)
 		if arg1 == "player" then
 			Yatabar:StartTimer(self, ...);
@@ -1056,7 +1057,7 @@ function Yatabar:GetStatusbar(parent, element)
 	statusbar:SetPoint("TOPLEFT", parent, "BOTTOMLEFT", 1, 0)
 	statusbar:SetWidth(Yatabar.buttonSize-2)
 	statusbar:SetHeight(Yatabar.statusbarHeight)
-	statusbar:SetStatusBarTexture("Interface\TargetingFrame\UI-StatusBar")
+	statusbar:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar")
 	statusbar:GetStatusBarTexture():SetHorizTile(false)
 	statusbar:GetStatusBarTexture():SetVertTile(false)
 	--statusbar:SetStatusBarColor(0, 0.65, 0)
