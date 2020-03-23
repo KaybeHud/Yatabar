@@ -2,7 +2,7 @@
  ...World of Warcraft\_classic_\WTF\Account\... search it in the subfolders, the place is maybe different on your computer
 
 
-- fixed bug: timer dont start
+- fixed bug: timer doesnt start
 ----------------------
 - add minimap icon
 - remove timer when player is dead
