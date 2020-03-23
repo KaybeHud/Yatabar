@@ -228,16 +228,18 @@ end
 function Yatabar:CreateTotemHeader(element)
 	--print("CreateTotemHeader")
 	local frameBorder = Yatabar.frameBorder 
-	if Yatabar["TotemHeader"..element] ~= nil then
-		Yatabar["TotemHeader"..element] = nil
+	if Yatabar["TotemHeader"..element] == nil then
+		Yatabar["TotemHeader"..element] = CreateFrame("Frame", "TotemHeader"..element, Yatabar.bar, "SecureHandlerStateTemplate")
 	end
-	Yatabar["TotemHeader"..element] = CreateFrame("Frame", "TotemHeader"..element, Yatabar.bar, "SecureHandlerStateTemplate")
+	Yatabar["TotemHeader"..element]:ClearAllPoints()
 	Yatabar["TotemHeader"..element].name = "TotemHeader"..element
 	Yatabar["TotemHeader"..element]:SetAttribute("key", self.popupKey)
 	Yatabar["TotemHeader"..element]:SetAttribute("element", element)
 	Yatabar["TotemHeader"..element]:SetPoint("BOTTOMLEFT", Yatabar.bar,"BOTTOMLEFT",(self.orderElements[element]-1) * Yatabar.buttonSize + frameBorder, frameBorder)
 	Yatabar["TotemHeader"..element]:SetSize(Yatabar.buttonSize, Yatabar.buttonSize * self.availableTotems[element].count)
-	Yatabar["TotemHeader"..element].statusbar = self:GetStatusbar(Yatabar["TotemHeader"..element],element)
+	if Yatabar["TotemHeader"..element].statusbar == nil then
+		Yatabar["TotemHeader"..element].statusbar = self:GetStatusbar(Yatabar["TotemHeader"..element],element)
+	end
 	Yatabar["TotemHeader"..element].statusbar:Show()
 	--Yatabar["TotemHeader"..element]:RegisterEvent("MODIFIER_STATE_CHANGED")
 	--Yatabar["TotemHeader"..element]:SetScript("OnEvent", function(frame,event, arg1, arg2) Yatabar:OnEventFunc(event, arg1, arg2, frame); end);
