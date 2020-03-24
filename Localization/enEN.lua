@@ -24,6 +24,8 @@ if not L then return end
 	L["no key"]  = "no key"
 	L["buttonsize"] = "Button size"
 	L["buttonsize desc"] = "Set the size of the buttons"
+	L["Hide timer bars"] = "Hide totem timer"
+	L["Hide timer bars desc"] = "Hide the totem timer bars"
 
 
 	L["Hide mainbar"] = true 	

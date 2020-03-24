@@ -26,6 +26,8 @@ L["Control-key"] = "Strg-Taste"
 L["no key"] = "keine Taste"
 L["buttonsize"] = "Button Gr\195\182sse"
 L["buttonsize desc"] = "Stell die Gr\195\182sse der Buttons ein"
+L["Hide timer bars"] = "Verstecke die Totem Timer"
+L["Hide timer bars desc"] = "Verstecke die Totem Timer Leisten"
 
 	L["Hide mainbar"] = "Standard Buttonleiste verstecken"
 	L["Hides the default mainbar"] = "Versteckt die Standard Buttonleiste"

@@ -67,7 +67,8 @@ local defaults =
 		padding = 0,
 		popupKey = "nokey",
 		buttonSize = 36, 
-		minimap = { hide = false, }
+		minimap = { hide = false, },
+		hideTimerBars = false
 	}
 }
 
@@ -122,6 +123,13 @@ function Yatabar:InitOptions()
 					["control"] = L["Control-key"],
 				},
 			}, 
+			hideTimerBars = {
+				name = L["Hide timer bars"],
+				type = "toggle",
+				desc = L["Hide timer bars desc"],
+				get = function() return Yatabar.hideTimerBars end,
+				set = function(frame, value) Yatabar:HideTimerBars(value) end,
+			},
 			totems = {
 				type = "group",
 				name = "Totems",
@@ -153,6 +161,7 @@ function Yatabar:OnInitialize()
 	self.orderTotemsInElement = self.config.orderTotemsInElement
 	self.buttonSize = self.config.buttonSize
 	self.popupKey = self.config.popupKey
+	self.hideTimerBars = self.config.hideTimerBars
 	if icon then
 		icon:Register(Yatabar.name, ldb, Yatabar.config.minimapIcon)
 	end
@@ -241,7 +250,11 @@ function Yatabar:CreateTotemHeader(element)
 	if Yatabar["TotemHeader"..element].statusbar == nil then
 		Yatabar["TotemHeader"..element].statusbar = self:GetStatusbar(Yatabar["TotemHeader"..element],element)
 	end
-	Yatabar["TotemHeader"..element].statusbar:Show()
+	if self.hideTimerBars == false then
+		Yatabar["TotemHeader"..element].statusbar:Show()
+	else
+		Yatabar["TotemHeader"..element].statusbar:Hide()
+	end
 	--Yatabar["TotemHeader"..element]:RegisterEvent("MODIFIER_STATE_CHANGED")
 	--Yatabar["TotemHeader"..element]:SetScript("OnEvent", function(frame,event, arg1, arg2) Yatabar:OnEventFunc(event, arg1, arg2, frame); end);
 
@@ -969,6 +982,20 @@ function Yatabar:HidePopups()
 	end
 end
 
+function Yatabar:HideTimerBars(value) 
+	Yatabar.hideTimerBars = value
+	self.config.hideTimerBars = value
+	if value == true then
+		for element, spell in pairs(Yatabar.availableTotems) do
+			Yatabar["TotemHeader"..element].statusbar:Hide()
+		end
+	else
+		for element, spell in pairs(Yatabar.availableTotems) do
+			Yatabar["TotemHeader"..element].statusbar:Show()
+		end
+	end
+end
+
 function Yatabar:SavePosition()
 	local scale = Yatabar.bar:GetEffectiveScale();
 	local point, relativeTo, relativePoint, xOfs, yOfs =  Yatabar.bar:GetPoint()
@@ -1016,6 +1043,9 @@ function Yatabar:ChatCommand(input)
 end
 
 function Yatabar:StartTimer(self, guid, spellId)
+	if Yatabar.hideTimerBars == true then
+		return
+	end
 	--print("StartTimer", guid, spellId)
 	local founded = false;
 	local name, startTime, duration, element;
