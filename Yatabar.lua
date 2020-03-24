@@ -4,10 +4,10 @@ end
 
 
 local TotemItems = {
-	[EARTH_TOTEM_SLOT] = 5175,
-	[FIRE_TOTEM_SLOT] = 5176,
-	[WATER_TOTEM_SLOT] = 5177,
-	[AIR_TOTEM_SLOT] = 5178,
+	["AIR"] = 4,
+	["FIRE"] = 1,
+	["WATER"] = 3,
+	["EARTH"] = 2,
 }
 
 Yatabar = LibStub("AceAddon-3.0"):NewAddon("Yatabar", "AceConsole-3.0")
@@ -31,7 +31,6 @@ Yatabar.orderTotemsInElement = {["EARTH"] = {}, ["WATER"] = {}, ["FIRE"] = {}, [
 Yatabar.hideTimerBars = false
 local _G = getfenv(0)
 local L = LibStub("AceLocale-3.0"):GetLocale(Yatabar.name, true)
---local GetTotemInfo = LibStub("LibTotemInfo-1.0").GetTotemInfo
 local MSQ = LibStub("Masque", true)
 local myGroup = {}
 
@@ -1047,6 +1046,7 @@ function Yatabar:StartTimer(self, guid, spellId)
 		return
 	end
 	--print("StartTimer", guid, spellId)
+	
 	local founded = false;
 	local name, startTime, duration, element;
 	local countdown;
@@ -1057,7 +1057,7 @@ function Yatabar:StartTimer(self, guid, spellId)
 		for idx, spell in ipairs(spells) do
 			if spell.name == name then
 				founded = true
-				duration = spell.duration
+				duration =  GetTotemTimeLeft(TotemItems[elmnt])--spell.duration
 				startTime = GetTime()
 				element = elmnt
 				break;
@@ -1161,6 +1161,8 @@ function OnUpdate(arg1, elapsed)
 		end
 	end
 end
+
+
 
 
 
