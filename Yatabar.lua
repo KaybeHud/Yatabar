@@ -3,11 +3,18 @@ if select(2, UnitClass('player')) ~= "SHAMAN" then
 end
 
 
-local TotemItems = {
+local Totems = {
 	["AIR"] = 4,
 	["FIRE"] = 1,
 	["WATER"] = 3,
 	["EARTH"] = 2,
+}
+
+local TotemItems = {
+	[EARTH_TOTEM_SLOT] = 5175,
+	[FIRE_TOTEM_SLOT] = 5176,
+	[WATER_TOTEM_SLOT] = 5177,
+	[AIR_TOTEM_SLOT] = 5178,
 }
 
 Yatabar = LibStub("AceAddon-3.0"):NewAddon("Yatabar", "AceConsole-3.0")
@@ -29,6 +36,7 @@ Yatabar.activeTotemStartTime = {}
 Yatabar.orderElements = {}
 Yatabar.orderTotemsInElement = {["EARTH"] = {}, ["WATER"] = {}, ["FIRE"] = {}, ["AIR"] = {}}
 Yatabar.hideTimerBars = false
+Yatabar.MacroResetKey = "shift"
 local _G = getfenv(0)
 local L = LibStub("AceLocale-3.0"):GetLocale(Yatabar.name, true)
 local MSQ = LibStub("Masque", true)
@@ -67,7 +75,8 @@ local defaults =
 		popupKey = "nokey",
 		buttonSize = 36, 
 		minimap = { hide = false, },
-		hideTimerBars = false
+		hideTimerBars = false,
+		MacroResetKey = "shift",
 	}
 }
 
@@ -154,17 +163,8 @@ function Yatabar:OnInitialize()
 	frame:RegisterEvent("SPELLS_CHANGED")
 	frame:SetScript("OnEvent", function(frame,event, ...) Yatabar:OnEventFunc(frame, event, ...); end);
 	--print("Initialize")
-	self.db = LibStub("AceDB-3.0"):New("YatabarDB", defaults)
-	self.config = self.db.char
-	self.orderElements = self.config.orderElements
-	self.orderTotemsInElement = self.config.orderTotemsInElement
-	self.buttonSize = self.config.buttonSize
-	self.popupKey = self.config.popupKey
-	self.hideTimerBars = self.config.hideTimerBars
-	if icon then
-		icon:Register(Yatabar.name, ldb, Yatabar.config.minimapIcon)
-	end
-
+	
+	self:SetConfigVars()
 	self.options = self:InitOptions()
 
 	LibStub("AceConfig-3.0"):RegisterOptionsTable(Yatabar.name, self.options)
@@ -179,16 +179,67 @@ function Yatabar:OnInitialize()
 	if MSQ then
 		myGroup = MSQ:Group(self.name,nil, true)
 	end
+	if icon then
+		icon:Register(Yatabar.name, ldb, Yatabar.config.minimapIcon)
+	end
 end
 
+function Yatabar:SetConfigVars()
+	self.db = LibStub("AceDB-3.0"):New("YatabarDB", defaults)
+	self.config = self.db.char
+	self.orderElements = self.config.orderElements
+	self.orderTotemsInElement = self.config.orderTotemsInElement
+	self.buttonSize = self.config.buttonSize
+	self.popupKey = self.config.popupKey
+	self.hideTimerBars = self.config.hideTimerBars
+	self.MacroResetKey = self.config.MacroResetKey
+	-- print(self.db.char.xOfs)
+	-- print(self.db.char.yOfs)
+end
 
 function Yatabar:OnEnable()
 	self.totemCount = self:GetTotemCount()
+	--self:LoadPosition()
 	self:CreateBar()
-	self:LoadPosition()
 	self:GetTotemSpellsByElement()
+	--self:TestButton()
 	
 	--print("Enabled")
+end
+
+local button = nil
+function Yatabar:TestButton()
+	local name = "Testbutton"
+	button = CreateFrame("CheckButton", name, UIParent, "SecureHandlerStateTemplate, SecureHandlerEnterLeaveTemplate, SecureActionButtonTemplate,ActionButtonTemplate")
+	button:SetPoint("CENTER",UIParent,"CENTER",-250,-250)
+	button:SetWidth(36);
+	button:SetHeight(36);
+	
+	button.icon = _G[name .. "Icon"];
+	button.icon:SetTexCoord(0.06, 0.94, 0.06, 0.94);
+
+	button.normalTexture = _G[name .. "NormalTexture"];
+	button.normalTexture:SetVertexColor(1, 1, 1, 0.5);
+
+	button.pushedTexture = button:GetPushedTexture();
+	button.highlightTexture = button:GetHighlightTexture();
+
+	button.cooldown = _G[name.."Cooldown"];
+	button.border = _G[name.."Border"];
+	button.macroName = _G[name.."Name"];
+	button.hotkey = _G[name.."HotKey"];
+	button.count = _G[name.."Count"];
+	button.flash = _G[name.."Flash"];
+	button.flash:Hide();
+
+	button:Show()
+	button:RegisterForClicks("LeftButtonUp")
+	button:SetScript("OnClick", function(...) Yatabar:TestEvent(...)end)
+end
+
+function Yatabar:TestEvent()
+	print("TestEvent")
+	Yatabar:EditMacro(false, nil,nil)
 end
 
 InterfaceOptionsFrame:HookScript("OnHide", function()
@@ -240,12 +291,28 @@ function Yatabar:CreateTotemHeader(element)
 	if Yatabar["TotemHeader"..element] == nil then
 		Yatabar["TotemHeader"..element] = CreateFrame("Frame", "TotemHeader"..element, Yatabar.bar, "SecureHandlerStateTemplate")
 	end
+
 	Yatabar["TotemHeader"..element]:ClearAllPoints()
 	Yatabar["TotemHeader"..element].name = "TotemHeader"..element
 	Yatabar["TotemHeader"..element]:SetAttribute("key", self.popupKey)
 	Yatabar["TotemHeader"..element]:SetAttribute("element", element)
 	Yatabar["TotemHeader"..element]:SetPoint("BOTTOMLEFT", Yatabar.bar,"BOTTOMLEFT",(self.orderElements[element]-1) * Yatabar.buttonSize + frameBorder, frameBorder)
-	Yatabar["TotemHeader"..element]:SetSize(Yatabar.buttonSize, Yatabar.buttonSize * self.availableTotems[element].count)
+	Yatabar["TotemHeader"..element]:SetSize(Yatabar.buttonSize, Yatabar.buttonSize * #self.orderTotemsInElement[element]) -- self.availableTotems[element].count)
+
+	--Yatabar["TotemHeader"..element]:SetBackdrop({
+		-- 	bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
+		-- 		tile = true,
+		-- 		tileSize = 1,
+		-- 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+		-- 		edgeSize = 0,
+		-- 		insets = {left = 0, right = 0, top = 0, bottom = 0}
+		-- })
+		
+	-- Yatabar["TotemHeader"..element]:SetBackdropColor(0, 0, 1, 1)
+	-- Yatabar["TotemHeader"..element]:SetBackdropBorderColor(0.5, 0.5, 0, 0)
+
+	Yatabar["TotemHeader"..element]:Show()
+
 	if Yatabar["TotemHeader"..element].statusbar == nil then
 		Yatabar["TotemHeader"..element].statusbar = self:GetStatusbar(Yatabar["TotemHeader"..element],element)
 	end
@@ -619,30 +686,40 @@ function Yatabar:SetOrderTotemSpells()
 
 	for element, spells in pairs(Yatabar.availableTotems) do
 		local count = 1
-		if Yatabar.orderTotemsInElement[element] == nil then
+		if Yatabar.orderTotemsInElement[element][1] == nil then
 			firstFill = true
 		end
-		for k, spell in pairs(spells) do
-			if k ~= "count" then 
-				local found = false
-				for idx, spellOrdered in pairs(Yatabar.orderTotemsInElement[element]) do
-					if spellOrdered.name  == spell.name then	--update spell
-						Yatabar.orderTotemsInElement[element][idx].id = spell.id
-						found = true
-						break
-					end
-				end
-				if found ~= true and firstFill == true then   --add new  spell
+		if firstFill then
+			for k, spell in pairs(spells) do
+				if k ~= "count" then 	
 					table.insert(Yatabar.orderTotemsInElement[element],spell)
-					found = false
-				end	
+				end
 			end
-			-- if Yatabar.orderTotemsInElement[element][count] == nil and k ~= "count" then
-			-- 	table.insert(Yatabar.orderTotemsInElement[element],spell)
-			-- 	count = count + 1
-			-- end
-			firstFill = false
+		else 
+			for k, spell in pairs(spells) do
+				if k ~= "count" then 
+					local found = false
+					for idx, spellOrdered in pairs(Yatabar.orderTotemsInElement[element]) do
+						if spellOrdered.name  == spell.name then	--update spell
+							Yatabar.orderTotemsInElement[element][idx].id = spell.id
+							found = true
+							break
+						end
+					end
+					-- if found ~= true and firstFill == true then   --add new  spell
+					-- 	print("new spell")
+					-- 	table.insert(Yatabar.orderTotemsInElement[element],spell)
+					-- 	found = false
+					-- end	
+				end
+				-- if Yatabar.orderTotemsInElement[element][count] == nil and k ~= "count" then
+				-- 	table.insert(Yatabar.orderTotemsInElement[element],spell)
+				-- 	count = count + 1
+				-- end
+				--firstFill = false
+			end
 		end
+		
 	end
 end
 
@@ -912,9 +989,9 @@ end
 
 function Yatabar:GetTotemCount()
 	count = 0
-	for idx, elem in pairs(TotemItems) do 
+	for elem, id in pairs(TotemItems) do 
 		if (elem) then
-			local totemItem = GetItemCount(elem)
+			local totemItem = GetItemCount(id)
 			haveTotem = (totemItem and totemItem > 0) and true or false
 		end
 		--haveTotem, totemName = GetTotemInfo(i)
@@ -999,7 +1076,9 @@ function Yatabar:SavePosition()
 	local scale = Yatabar.bar:GetEffectiveScale();
 	local point, relativeTo, relativePoint, xOfs, yOfs =  Yatabar.bar:GetPoint()
 	self.db.char.xOfs = xOfs
+	--print(self.db.char.xOfs)
 	self.db.char.yOfs = yOfs
+	--print(self.db.char.yOfs)
 	self.db.char.scale = scale	
 end
 
@@ -1029,7 +1108,8 @@ end
 function Yatabar:LoadPosition()
 	local scale = self.db.char.scale
 	local xOfs, yOfs = self.db.char.xOfs, self.db.char.yOfs
-	Yatabar.bar:SetPoint("CENTER",UIParent, "CENTER", xOfs, yOfs);
+	print(xOfs, yOfs)
+	--Yatabar.bar:SetPoint("CENTER",UIParent, "CENTER", xOfs, yOfs);
 end
 
 function Yatabar:ChatCommand(input)
@@ -1057,7 +1137,7 @@ function Yatabar:StartTimer(self, guid, spellId)
 		for idx, spell in ipairs(spells) do
 			if spell.name == name then
 				founded = true
-				duration =  GetTotemTimeLeft(TotemItems[elmnt])--spell.duration
+				duration =  GetTotemTimeLeft(Totems[elmnt])--spell.duration
 				startTime = GetTime()
 				element = elmnt
 				break;
@@ -1163,7 +1243,58 @@ function OnUpdate(arg1, elapsed)
 end
 
 
+function Yatabar:GetTotemSet()
+	local set = {}
+	for element, spells in pairs(Yatabar.orderTotemsInElement) do
+		table.insert(set, Yatabar.orderTotemsInElement[element][1].name)
+		print("TotemSet:",element, Yatabar.orderTotemsInElement[element][1].name)
+		break;
+	end
+	return set
+end
 
+function Yatabar:EditMacro(force, old,new)
+	local num = GetNumMacros()
+	local macroindex = GetMacroIndexByName("YatabarTotem")
+	if force or macroindex == 0 and num < 36 then
+		local macro = "#showtooltip\n/castsequence reset=combat/"..self.MacroResetKey.." "
+		local totems = Yatabar:GetTotemSet()
+		-- for k,v in ipairs(set.GroupOrder) do
+		-- 	if v ~= SPELL_GROUP_IMBUE and v~= SPELL_GROUP_CALL then
+		-- 		for i,b in ipairs(self.Groups[v].Buttons) do
+		-- 			if b:GetAttribute("position") == 0 then
+		-- 				table.insert(totems,b.Totem.Name)
+		-- 				break
+		-- 			end
+		-- 		end
+		-- 	end
+		-- end
+		for k,v in ipairs(totems) do
+			if totems[k] and totems[k+1] then
+				macro = string.format("%s%s, ",macro,v)
+			else
+				macro = string.format("%s%s",macro,v)
+			end
+		end
+		local numIcons = GetNumMacroIcons()
+		local iconid = 0
+		for i=1,numIcons do
+			if GetMacroIconInfo(i) == "Interface\\Icons\\INV_Misc_QuestionMark" then
+				iconid = i
+				break
+			end
+		end	
+		if force and macroindex > 0 then		
+			EditMacro(macroindex, "YataTotem", iconid, macro, 1)
+		else
+			CreateMacro("YataTotem",iconid,macro,1,1)
+		end
+	elseif macroindex > 0 and old and new then
+		local name, texture, macro, isLocal = GetMacroInfo(macroindex)
+		macro = string.gsub(macro,old,new)
+		EditMacro(macroindex, name, texture, macro, isLocal);
+	end	
+end
 
 
 
