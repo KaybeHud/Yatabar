@@ -37,6 +37,12 @@ Yatabar.orderElements = {}
 Yatabar.orderTotemsInElement = {["EARTH"] = {}, ["WATER"] = {}, ["FIRE"] = {}, ["AIR"] = {}}
 Yatabar.hideTimerBars = false
 Yatabar.MacroResetKey = "shift"
+Yatabar.ElementBinding = {
+	["AIR"] = "",
+	["FIRE"] = "",
+	["WATER"] = "",
+	["EARTH"] = "",
+}
 local _G = getfenv(0)
 local L = LibStub("AceLocale-3.0"):GetLocale(Yatabar.name, true)
 local MSQ = LibStub("Masque", true)
@@ -94,9 +100,9 @@ function Yatabar:InitOptions()
 				type = "toggle",
 				name = L["Hide the bar"],
 				desc = L["Hide the bar"],
-				get = function() return not Yatabar.bar:IsVisible() end,
+				get = function() if Yatabar.bar == nil then return Yatabar.bar:IsVisible() else return false end end,
 				set = function() Yatabar:toggleBarVisibility() end, 
-			}
+			},
 			orientation = {
 				type = "select",
 				name = L["Orientation"],
@@ -177,9 +183,7 @@ function Yatabar:OnInitialize()
 	self:SetConfigVars()
 	self.options = self:InitOptions()
 
-	LibStub("AceConfig-3.0"):RegisterOptionsTable(Yatabar.name, self.options)
-	self.optionsFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions(self.name, self.name)
-	self.optionsFrameGui = LibStub("AceConfigDialog-3.0"):Open(self.name)
+	
 	-- self.optionsFrame:HookScript("OnHide", function()
 	-- 	print("Close Option2")
 	-- end)
@@ -212,6 +216,9 @@ function Yatabar:OnEnable()
 	--self:LoadPosition()
 	self:CreateBar()
 	self:GetTotemSpellsByElement()
+	LibStub("AceConfig-3.0"):RegisterOptionsTable(Yatabar.name, self.options)
+	self.optionsFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions(self.name, self.name)
+	self.optionsFrameGui = LibStub("AceConfigDialog-3.0"):Open(self.name)
 	self:TestButton()
 	
 	--print("Enabled")
@@ -786,8 +793,8 @@ function Yatabar:AddOptionsForTotems()
 				name = L["Set key binding"],
 				desc = L["Set the key binding desc"],
 				type = "keybinding",
-				get = function() return end,
-				set = function(...) print(...) end,
+				get = function() return Yatabar.ElementBinding[element] end,
+				set = function(tbl, key) Yatabar:SetKeyBinding(element, key) end,
 			}
 		}
 
@@ -1060,7 +1067,10 @@ function Yatabar:SetPopupKey(key)
 	for element, spell in pairs(Yatabar.availableTotems) do
 		Yatabar["TotemHeader"..element]:SetAttribute("key", key)
 	end
+end
 
+function Yatabar:SetKeyBinding(element, key)
+	Yatabar.ElementBinding[element] = key
 end
 
 function Yatabar:StartDrag()
@@ -1278,7 +1288,6 @@ function Yatabar:GetTotemSet()
 	for element, spells in pairs(Yatabar.orderTotemsInElement) do
 		table.insert(set, Yatabar.orderTotemsInElement[element][1].name)
 		print("TotemSet:",element, Yatabar.orderTotemsInElement[element][1].name)
-		break;
 	end
 	return set
 end
@@ -1290,6 +1299,7 @@ function Yatabar:EditMacro(force, old,new)
 	end
 	local num = GetNumMacros()
 	local macroindex = GetMacroIndexByName("YatabarTotem")
+	local totems = Yatabar:GetTotemSet()
 	if force or macroindex == 0 and num < 36 then
 		local macro = "#showtooltip\n/castsequence reset=combat/"..self.MacroResetKey.." "
 		for k,v in ipairs(totems) do
