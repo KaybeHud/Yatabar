@@ -17,6 +17,7 @@ if not L then return end
 	L["Set the orientation of the bar."] = "Set the orientation of the bar." 
 	L["Left Click|r to open configuration"] = "Left Click|r to open configuration"
 	L["Right Click|r to lock/unlock bar"] = "Right Click|r to lock/unlock bar"
+	L["Middle Click|r to show/hide the bar"] = "Middle Click|r to show/hide the bar"
 	L["Totem not active"] = "Totem is not active"
 	L["Shift-key"] = "Shift-key"
 	L["Alt-key"] = "Alt-key"
@@ -26,9 +27,10 @@ if not L then return end
 	L["buttonsize desc"] = "Set the size of the buttons"
 	L["Hide timer bars"] = "Hide totem timer"
 	L["Hide timer bars desc"] = "Hide the totem timer bars"
+	L["Set key binding"] = "Set key binding"
+	L["Set the key binding desc"] = "Bind a key for that element"
+	L["Hide the bar"] = "Hide the bar"
 
-
-	L["Hide mainbar"] = true 	
 	L["Hides the default mainbar"] = true 
 	L["Button Lock"] = true
 	L["Lock the buttons"] = true 

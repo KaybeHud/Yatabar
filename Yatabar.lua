@@ -49,8 +49,10 @@ local ldb = LibStub:GetLibrary("LibDataBroker-1.1"):NewDataObject(Yatabar.name, 
     OnClick = function(self, button)
 		if (button == "RightButton") then
 			Yatabar:toggleLock()
-		else
+		elseif button == "LeftButton" then
 			LibStub("AceConfigDialog-3.0"):Open(Yatabar.name)
+		elseif button == "MiddleButton" then
+			Yatabar:toggleBarVisibility()
 		end
 	end,
 	OnTooltipShow = function(Tip)
@@ -59,6 +61,7 @@ local ldb = LibStub:GetLibrary("LibDataBroker-1.1"):NewDataObject(Yatabar.name, 
 		end
 		Tip:AddLine(Yatabar.name)
 		Tip:AddLine("|cFFff4040"..L["Left Click|r to open configuration"], 1, 1, 1)
+		Tip:AddLine("|cFFff4040"..L["Middle Click|r to show/hide the bar"], 1, 1, 1)
 		Tip:AddLine("|cFFff4040"..L["Right Click|r to lock/unlock bar"], 1, 1, 1)
 	end,
 })
@@ -87,6 +90,13 @@ function Yatabar:InitOptions()
 		icon = "Interface\\Icons\\inv_banner_01",
 		type="group",
 		args = {
+			barVisible = {
+				type = "toggle",
+				name = L["Hide the bar"],
+				desc = L["Hide the bar"],
+				get = function() return not Yatabar.bar:IsVisible() end,
+				set = function() Yatabar:toggleBarVisibility() end, 
+			}
 			orientation = {
 				type = "select",
 				name = L["Orientation"],
@@ -202,7 +212,7 @@ function Yatabar:OnEnable()
 	--self:LoadPosition()
 	self:CreateBar()
 	self:GetTotemSpellsByElement()
-	--self:TestButton()
+	self:TestButton()
 	
 	--print("Enabled")
 end
@@ -239,7 +249,7 @@ end
 
 function Yatabar:TestEvent()
 	print("TestEvent")
-	Yatabar:EditMacro(false, nil,nil)
+	Yatabar:EditMacro(true, nil,nil)
 end
 
 InterfaceOptionsFrame:HookScript("OnHide", function()
@@ -771,6 +781,13 @@ function Yatabar:AddOptionsForTotems()
 				desc = L["Click to change order"],
 				type = "execute",
 				func = function(tbl,click) Yatabar:ActivateTotemOrder(element, tbl) end,
+			},
+			totemKeyBind = {
+				name = L["Set key binding"],
+				desc = L["Set the key binding desc"],
+				type = "keybinding",
+				get = function() return end,
+				set = function(...) print(...) end,
 			}
 		}
 
@@ -1020,6 +1037,19 @@ function Yatabar:toggleLock()
 	end
 end
 
+function Yatabar:toggleBarVisibility()
+	if InCombatLockdown() then
+		print("Yatabar: ", L["function not available during combat"])
+		return
+	end
+
+	if Yatabar.bar:IsVisible() then
+		Yatabar.bar:Hide()
+	else
+		Yatabar.bar:Show()
+	end
+end
+
 function Yatabar:SetPopupKey(key)
 	if InCombatLockdown() then
 		print("Yatabar: ", L["function not available during combat"])
@@ -1254,21 +1284,14 @@ function Yatabar:GetTotemSet()
 end
 
 function Yatabar:EditMacro(force, old,new)
+	if InCombatLockdown() then
+		print("Yatabar: ", L["function not available during combat"])
+		return
+	end
 	local num = GetNumMacros()
 	local macroindex = GetMacroIndexByName("YatabarTotem")
 	if force or macroindex == 0 and num < 36 then
 		local macro = "#showtooltip\n/castsequence reset=combat/"..self.MacroResetKey.." "
-		local totems = Yatabar:GetTotemSet()
-		-- for k,v in ipairs(set.GroupOrder) do
-		-- 	if v ~= SPELL_GROUP_IMBUE and v~= SPELL_GROUP_CALL then
-		-- 		for i,b in ipairs(self.Groups[v].Buttons) do
-		-- 			if b:GetAttribute("position") == 0 then
-		-- 				table.insert(totems,b.Totem.Name)
-		-- 				break
-		-- 			end
-		-- 		end
-		-- 	end
-		-- end
 		for k,v in ipairs(totems) do
 			if totems[k] and totems[k+1] then
 				macro = string.format("%s%s, ",macro,v)
@@ -1276,18 +1299,11 @@ function Yatabar:EditMacro(force, old,new)
 				macro = string.format("%s%s",macro,v)
 			end
 		end
-		local numIcons = GetNumMacroIcons()
-		local iconid = 0
-		for i=1,numIcons do
-			if GetMacroIconInfo(i) == "Interface\\Icons\\INV_Misc_QuestionMark" then
-				iconid = i
-				break
-			end
-		end	
+		local iconid = "inv_banner_01"
 		if force and macroindex > 0 then		
-			EditMacro(macroindex, "YataTotem", iconid, macro, 1)
+			EditMacro(macroindex, "YatabarTotem", iconid, macro, true)
 		else
-			CreateMacro("YataTotem",iconid,macro,1,1)
+			CreateMacro("YatabarTotem",iconid,macro,true)
 		end
 	elseif macroindex > 0 and old and new then
 		local name, texture, macro, isLocal = GetMacroInfo(macroindex)
