@@ -34,6 +34,7 @@ Yatabar.activateSpellOrder = {active = false, element = "", order = 1}
 Yatabar.activeTotemTimer = {}
 Yatabar.activeTotemStartTime = {}
 Yatabar.orderElements = {}
+Yatabar.hideMinimapIcon = false
 Yatabar.orderTotemsInElement = {["EARTH"] = {}, ["WATER"] = {}, ["FIRE"] = {}, ["AIR"] = {}}
 Yatabar.hideTimerBars = false
 Yatabar.MacroResetKey = "shift"
@@ -43,6 +44,7 @@ Yatabar.ElementBinding = {
 	["WATER"] = "",
 	["EARTH"] = "",
 }
+
 local _G = getfenv(0)
 local L = LibStub("AceLocale-3.0"):GetLocale(Yatabar.name, true)
 local MSQ = LibStub("Masque", true)
@@ -72,7 +74,7 @@ local ldb = LibStub:GetLibrary("LibDataBroker-1.1"):NewDataObject(Yatabar.name, 
 	end,
 })
 
-local icon = LibStub("LibDBIcon-1.0")
+Yatabar.icon = LibStub("LibDBIcon-1.0")
 
 local defaults = 
 {
@@ -86,6 +88,13 @@ local defaults =
 		minimap = { hide = false, },
 		hideTimerBars = false,
 		MacroResetKey = "shift",
+		hideMinimapIcon = false,
+		ElementBinding = {
+			["AIR"] = "",
+			["FIRE"] = "",
+			["WATER"] = "",
+			["EARTH"] = "",
+		},
 	}
 }
 
@@ -100,6 +109,7 @@ function Yatabar:InitOptions()
 				type = "toggle",
 				name = L["Hide the bar"],
 				desc = L["Hide the bar"],
+				order = 4,
 				get = function() if Yatabar.bar == nil then return Yatabar.bar:IsVisible() else return false end end,
 				set = function() Yatabar:toggleBarVisibility() end, 
 			},
@@ -107,7 +117,7 @@ function Yatabar:InitOptions()
 				type = "select",
 				name = L["Orientation"],
 				desc = L["Set the orientation of the bar."],
-				order = 6,
+				order = 1,
 				get = function() return Yatabar.config.orientation; end,
 				set = function(info,value) Yatabar.config.orientation = value; self:SetLayout(); end,
 				values = {
@@ -121,6 +131,7 @@ function Yatabar:InitOptions()
 				type = "range",
 				name = L["buttonsize"],
 				desc = L["buttonsize desc"],
+				order = 2,
 				min = 5,
 				max = 100,
 				step = 1,
@@ -132,12 +143,15 @@ function Yatabar:InitOptions()
 				type = "toggle",
 				name = L["Lock the bar"],
 				desc = L["Lock/Unlock the bar"],
+				order =3,
 				get = function() return Yatabar.isLocked end,
 				set = function(tbl,value) Yatabar:toggleLock() end,
 			},
 			keybind = {
 				type = "select",
-				name = "Set popup key",
+				name = L["Set popup key"],
+				desc = L["Set popup key desc"],
+				order = 7,
 				get = function() return Yatabar.popupKey end,
 				set = function(info, value) Yatabar:SetPopupKey(value) end,
 				values = {
@@ -150,9 +164,18 @@ function Yatabar:InitOptions()
 			hideTimerBars = {
 				name = L["Hide timer bars"],
 				type = "toggle",
+				order = 5,
 				desc = L["Hide timer bars desc"],
 				get = function() return Yatabar.hideTimerBars end,
 				set = function(frame, value) Yatabar:HideTimerBars(value) end,
+			},
+			hideMinimapIcon = {
+				name = L["Hide minimap icon"],
+				type = "toggle",
+				order = 6,
+				desc = L["Hide minimap icon desc"],
+				get = function() return Yatabar.config.minimap.hide end,
+				set = function(frame, value) Yatabar:HideMinimapIcon(value) end,
 			},
 			totems = {
 				type = "group",
@@ -193,8 +216,8 @@ function Yatabar:OnInitialize()
 	if MSQ then
 		myGroup = MSQ:Group(self.name,nil, true)
 	end
-	if icon then
-		icon:Register(Yatabar.name, ldb, Yatabar.config.minimapIcon)
+	if Yatabar.icon then
+		Yatabar.icon:Register(Yatabar.name, ldb, not Yatabar.config.minimap)
 	end
 end
 
@@ -207,6 +230,8 @@ function Yatabar:SetConfigVars()
 	self.popupKey = self.config.popupKey
 	self.hideTimerBars = self.config.hideTimerBars
 	self.MacroResetKey = self.config.MacroResetKey
+	self.hideMinimapIcon = self.config.hideMinimapIcon
+	self.ElementBinding = self.config.ElementBinding 
 	-- print(self.db.char.xOfs)
 	-- print(self.db.char.yOfs)
 end
@@ -219,7 +244,8 @@ function Yatabar:OnEnable()
 	LibStub("AceConfig-3.0"):RegisterOptionsTable(Yatabar.name, self.options)
 	self.optionsFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions(self.name, self.name)
 	self.optionsFrameGui = LibStub("AceConfigDialog-3.0"):Open(self.name)
-	self:TestButton()
+	self:LoadKeyBinding()
+	--self:TestButton()
 	
 	--print("Enabled")
 end
@@ -1057,6 +1083,22 @@ function Yatabar:toggleBarVisibility()
 	end
 end
 
+function Yatabar:HideMinimapIcon(value)
+	if InCombatLockdown() then
+		print("Yatabar: ", L["function not available during combat"])
+		return
+	end
+
+	Yatabar.config.minimap.hide = value
+	if value == true then
+		print(value)
+		Yatabar.icon:Hide()
+	else
+		print("_",value)
+		Yatabar.icon:Show()
+	end
+end
+
 function Yatabar:SetPopupKey(key)
 	if InCombatLockdown() then
 		print("Yatabar: ", L["function not available during combat"])
@@ -1070,7 +1112,23 @@ function Yatabar:SetPopupKey(key)
 end
 
 function Yatabar:SetKeyBinding(element, key)
-	Yatabar.ElementBinding[element] = key
+	if key == nil or key == "" then
+		key = Yatabar.ElementBinding[element] 
+		SetBinding(key,"")
+		Yatabar.ElementBinding[element] = ""
+	else
+		Yatabar.ElementBinding[element] = key
+		spellname = GetSpellInfo(Yatabar.orderTotemsInElement[element][1].name)
+		local success = SetBindingSpell(key, spellname)
+	end
+	self.config.ElementBinding[element] = Yatabar.ElementBinding[element]
+end
+
+function Yatabar:LoadKeyBinding()
+	for element, key  in pairs(Yatabar.ElementBinding) do
+		spellname = GetSpellInfo(Yatabar.orderTotemsInElement[element][1].name)
+		SetBindingSpell(key, spellname)
+	end
 end
 
 function Yatabar:StartDrag()

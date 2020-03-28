@@ -30,6 +30,10 @@ if not L then return end
 	L["Set key binding"] = "Set key binding"
 	L["Set the key binding desc"] = "Bind a key for that element"
 	L["Hide the bar"] = "Hide the bar"
+	L["Set popup key"] = "Set popup key"
+	L["Set popup key desc"] = "Set the key to show the popup buttons"
+	L["Hide minimap icon"] =  "Hide minimap icon"
+	L["Hide minimap icon desc"] =  "Hide the minimap icon"
 
 	L["Hides the default mainbar"] = true 
 	L["Button Lock"] = true
