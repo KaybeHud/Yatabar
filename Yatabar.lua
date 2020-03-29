@@ -161,7 +161,7 @@ function Yatabar:InitOptions()
 					["control"] = L["Control-key"],
 				},
 			}, 
-			hideTimerBars = {
+			hideTimerBar = {
 				name = L["Hide timer bars"],
 				type = "toggle",
 				order = 5,
@@ -238,7 +238,7 @@ end
 
 function Yatabar:OnEnable()
 	self.totemCount = self:GetTotemCount()
-	--self:LoadPosition()
+	self:LoadPosition()
 	self:CreateBar()
 	self:GetTotemSpellsByElement()
 	LibStub("AceConfig-3.0"):RegisterOptionsTable(Yatabar.name, self.options)
@@ -610,11 +610,11 @@ end
 
 
 function Yatabar:OnEventFunc(frame, event, arg1, ...)
-	if event == "PLAYER_ENTERING_WORLD" or event == "LEARNED_SPELL_IN_TAB" or event == "PLAYER_ALIVE" or event == "PLAYER_LEVEL_UP"   then
+	if event == "PLAYER_ENTERING_WORLD"  or event == "PLAYER_ALIVE" or event == "PLAYER_LEVEL_UP"   then
 		--print(event)
-		spellname, rank, icon, castTime, minRange, maxRange, spellId = GetSpellInfo(8071)
+		--spellname, rank, icon, castTime, minRange, maxRange, spellId = GetSpellInfo(8071)
 		--print(spellname, spellId)
-		spellname, rank, icon, castTime, minRange, maxRange, spellId = GetSpellInfo(spellname) 
+		--spellname, rank, icon, castTime, minRange, maxRange, spellId = GetSpellInfo(spellname) 
 		--print(spellname, spellId)
 	end
 	if event == "SPELLS_CHANGED" then
@@ -1088,14 +1088,11 @@ function Yatabar:HideMinimapIcon(value)
 		print("Yatabar: ", L["function not available during combat"])
 		return
 	end
-
 	Yatabar.config.minimap.hide = value
 	if value == true then
-		print(value)
-		Yatabar.icon:Hide()
+		Yatabar.icon:Hide(Yatabar.name)
 	else
-		print("_",value)
-		Yatabar.icon:Show()
+		Yatabar.icon:Show(Yatabar.name)
 	end
 end
 
@@ -1157,6 +1154,10 @@ function Yatabar:HidePopups()
 end
 
 function Yatabar:HideTimerBars(value) 
+	if InCombatLockdown() then
+		print("Yatabar: ", L["function not available during combat"])
+		return
+	end
 	Yatabar.hideTimerBars = value
 	self.config.hideTimerBars = value
 	if value == true then
@@ -1206,7 +1207,7 @@ end
 function Yatabar:LoadPosition()
 	local scale = self.db.char.scale
 	local xOfs, yOfs = self.db.char.xOfs, self.db.char.yOfs
-	print(xOfs, yOfs)
+	--print(xOfs, yOfs)
 	--Yatabar.bar:SetPoint("CENTER",UIParent, "CENTER", xOfs, yOfs);
 end
 
