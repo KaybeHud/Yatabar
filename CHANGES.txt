@@ -1,6 +1,11 @@
 !! -  If you have used a version < 0.8, I recommend to delete the Yatabar.lua and Yatabar.lua.bak in your SavedVariables folder:
  ...World of Warcraft\_classic_\WTF\Account\... search it in the subfolders, the place is maybe different on your computer
 
+- added keybinding
+- create multicast macro for totems
+- fixed some issues (bar positioning, ... )
+
+----------------------
 - fixed bug in config menu
 - fixed bug, do not load the totems 
 ---------------------
