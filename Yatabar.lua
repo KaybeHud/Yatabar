@@ -975,15 +975,23 @@ function Yatabar:SetTotemOrder(tbl,mousebutton, element, spellId)
 	if not Yatabar.activateSpellOrder.active then
 		return
 	end
-	local newPosition = Yatabar.activateSpellOrder.order
-	--print("setOrder")
+	
 	local totemFound = false
 	local currentPosition = 0
+	local newPosition = Yatabar.activateSpellOrder.order
+	--set position for next totem
+	Yatabar.activateSpellOrder.order = Yatabar.activateSpellOrder.order+1
+	Yatabar["TotemHeader"..element]:Execute([[
+			control:Run(show)
+			]])
+	--print("new Position", newPosition)
+
 	--check if clicked totem is visible/active
 	for idx, spell in ipairs (self.orderTotemsInElement[element]) do
 		if spell.id == spellId then
 			currentPosition = idx
 			totemFound = true
+			break;
 		end
 	end
 	if not totemFound then
@@ -994,24 +1002,21 @@ function Yatabar:SetTotemOrder(tbl,mousebutton, element, spellId)
 		return
 	end
 	--print("oldpostion", currentPosition)
-	
-	Yatabar.activateSpellOrder.order = Yatabar.activateSpellOrder.order+1
-	Yatabar["TotemHeader"..element]:Execute([[
-			control:Run(show)
-			]])
-	--print("new Position", newPosition)
-	
-	
-	 
 	local spellToSwitch = 0 
 	local findSpellToSwitch = false
 	for order, spell in pairs(self.orderTotemsInElement[element]) do
 		if type(spell.id) == "number" and order == newPosition then
 			spellToSwitch = spell.id
 			findSpellToSwitch = true
-			break	
+			break;	
 		end
 	end
+
+	--remove old keybind
+	-- if newPosition == 1 then
+	-- 	self:SetKeyBinding(element, nil) 
+	-- end
+	
 
 	if findSpellToSwitch == false then
 		print("Yatatbar: ", L["no more spell to switch"])
@@ -1023,16 +1028,22 @@ function Yatabar:SetTotemOrder(tbl,mousebutton, element, spellId)
 	self.orderTotemsInElement[element][newPosition] = {["id"] = spellId, ["name"] = spellname}
 	self.orderTotemsInElement[element][currentPosition] = {["id"] = spellToSwitch, ["name"] = spellnameToSwitch}
 	
+	-- Set keybinding if first totem changed
+	if newPosition == 1 then
+		local key = Yatabar.ElementBinding[element]
+		self:SetKeyBinding(element, key) 
+	end
 
-	--Set Position in text in Config Dialog
-	local oldSpellname = GetSpellInfo(spellToSwitch)
+	--Set position text in Config Dialog
 	for k,v in pairs (tbl.options.args.totems.args[element].args) do
 		if v.name == tbl.option.name then
 			v.args.text.name = "Position "..newPosition
-		elseif v.name == oldSpellname then
+		elseif v.name == spellnameToSwitch then
 			v.args.text.name = "Position "..currentPosition
 		end
 	end
+
+	
 
 	self:SetLayout()
 end
@@ -1114,6 +1125,11 @@ function Yatabar:SetKeyBinding(element, key)
 		SetBinding(key,"")
 		Yatabar.ElementBinding[element] = ""
 	else
+		for element, k in pairs(Yatabar.ElementBinding) do
+			if key == k then
+				Yatabar:SetKeyBinding(element, nil)
+			end
+		end
 		Yatabar.ElementBinding[element] = key
 		spellname = GetSpellInfo(Yatabar.orderTotemsInElement[element][1].name)
 		local success = SetBindingSpell(key, spellname)
