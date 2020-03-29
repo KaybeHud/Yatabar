@@ -1028,10 +1028,11 @@ function Yatabar:SetTotemOrder(tbl,mousebutton, element, spellId)
 	self.orderTotemsInElement[element][newPosition] = {["id"] = spellId, ["name"] = spellname}
 	self.orderTotemsInElement[element][currentPosition] = {["id"] = spellToSwitch, ["name"] = spellnameToSwitch}
 	
-	-- Set keybinding if first totem changed
+	-- Set keybinding if first totem changed and create new macro
 	if newPosition == 1 then
 		local key = Yatabar.ElementBinding[element]
 		self:SetKeyBinding(element, key) 
+		Yatabar:EditMacro(true, nil,nil)
 	end
 
 	--Set position text in Config Dialog
@@ -1125,11 +1126,15 @@ function Yatabar:SetKeyBinding(element, key)
 		SetBinding(key,"")
 		Yatabar.ElementBinding[element] = ""
 	else
-		for element, k in pairs(Yatabar.ElementBinding) do
-			if key == k then
-				Yatabar:SetKeyBinding(element, nil)
+		--search for an other element already binded to that key and delete it
+		for elmnt, k in pairs(Yatabar.ElementBinding) do
+			if key == k and element ~= elmnt then
+				Yatabar:SetKeyBinding(elmnt, nil)
+				print("Yatabar: ", L["key already bind"]..L[elmnt])
 			end
 		end
+		--remove old key
+		SetBinding(Yatabar.ElementBinding[element],"")
 		Yatabar.ElementBinding[element] = key
 		spellname = GetSpellInfo(Yatabar.orderTotemsInElement[element][1].name)
 		local success = SetBindingSpell(key, spellname)
@@ -1362,7 +1367,7 @@ function Yatabar:GetTotemSet()
 	local set = {}
 	for element, spells in pairs(Yatabar.orderTotemsInElement) do
 		table.insert(set, Yatabar.orderTotemsInElement[element][1].name)
-		print("TotemSet:",element, Yatabar.orderTotemsInElement[element][1].name)
+		--print("TotemSet:",element, Yatabar.orderTotemsInElement[element][1].name)
 	end
 	return set
 end

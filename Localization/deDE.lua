@@ -36,6 +36,7 @@ L["Set popup key"] = "Setze Popup-Taste"
 L["Set popup key desc"] = "Lege die Taste zum Zeigen der Popup-Button fest"
 L["Hide minimap icon"] =  "Verstecke Minimap-Symbol"
 L["Hide minimap icon desc"] =  "Verstecke das Minimap-Symbol"
+L["key already bind"] = "Taste war gebunden an: "
 
 	L["Hides the default mainbar"] = "Versteckt die Standard Buttonleiste"
 	L["Button Lock"] = "Kn\195\182pfe sperren"

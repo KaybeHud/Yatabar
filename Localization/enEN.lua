@@ -34,6 +34,7 @@ if not L then return end
 	L["Set popup key desc"] = "Set the key to show the popup buttons"
 	L["Hide minimap icon"] =  "Hide minimap icon"
 	L["Hide minimap icon desc"] =  "Hide the minimap icon"
+	L["key already bind"] = "key was binded to: "
 
 	L["Hides the default mainbar"] = true 
 	L["Button Lock"] = true
