@@ -95,6 +95,9 @@ local defaults =
 			["WATER"] = "",
 			["EARTH"] = "",
 		},
+		xOfs = 0,
+		yOfs = 0,
+
 	}
 }
 
@@ -105,12 +108,12 @@ function Yatabar:InitOptions()
 		icon = "Interface\\Icons\\inv_banner_01",
 		type="group",
 		args = {
-			barVisible = {
+			hideBar = {
 				type = "toggle",
 				name = L["Hide the bar"],
 				desc = L["Hide the bar"],
 				order = 4,
-				get = function() if Yatabar.bar == nil then return Yatabar.bar:IsVisible() else return false end end,
+				get = function() if Yatabar.bar ~= nil then return not Yatabar.bar:IsVisible() else return true end end,
 				set = function() Yatabar:toggleBarVisibility() end, 
 			},
 			orientation = {
@@ -238,7 +241,7 @@ end
 
 function Yatabar:OnEnable()
 	self.totemCount = self:GetTotemCount()
-	self:LoadPosition()
+	--self:LoadPosition()
 	self:CreateBar()
 	self:GetTotemSpellsByElement()
 	LibStub("AceConfig-3.0"):RegisterOptionsTable(Yatabar.name, self.options)
