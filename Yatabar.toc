@@ -15,4 +15,6 @@ Localization\enEN.lua
 Localization\deDE.lua
 TotemData.lua
 Yatabar.lua
+Config.lua
+Buttons.lua
 

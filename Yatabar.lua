@@ -18,7 +18,7 @@ local TotemItems = {
 }
 
 Yatabar = LibStub("AceAddon-3.0"):NewAddon("Yatabar", "AceConsole-3.0")
-local LAB = LibStub("LibActionButton-1.0")
+
 Yatabar.spellLoaded = false
 Yatabar.totemCount = 0 
 Yatabar.buttonSize = 36
@@ -97,101 +97,14 @@ local defaults =
 		},
 		xOfs = 0,
 		yOfs = 0,
+		defaults = {},
+		activeProfile = {},
+		profiles = {},
 
 	}
 }
 
-function Yatabar:InitOptions()
-	local options = {
-		name = Yatabar.name,
-		desc = L["Totem with popup buttons"],
-		icon = "Interface\\Icons\\inv_banner_01",
-		type="group",
-		args = {
-			hideBar = {
-				type = "toggle",
-				name = L["Hide the bar"],
-				desc = L["Hide the bar"],
-				order = 4,
-				get = function() if Yatabar.bar ~= nil then return not Yatabar.bar:IsVisible() else return true end end,
-				set = function() Yatabar:toggleBarVisibility() end, 
-			},
-			orientation = {
-				type = "select",
-				name = L["Orientation"],
-				desc = L["Set the orientation of the bar."],
-				order = 1,
-				get = function() return Yatabar.config.orientation; end,
-				set = function(info,value) Yatabar.config.orientation = value; self:SetLayout(); end,
-				values = {
-					["horzup"] = L["Horizontal, Grow Up"],
-					["horzdown"] = L["Horizontal, Grow Down"],
-					["vertright"] = L["Vertical, Grow Right"],
-					["vertleft"] = L["Vertical, Grow Left"],
-				},
-			},
-			buttonsize = {
-				type = "range",
-				name = L["buttonsize"],
-				desc = L["buttonsize desc"],
-				order = 2,
-				min = 5,
-				max = 100,
-				step = 1,
-				get = function() return Yatabar.buttonSize end ,
-				set = function(frame, size) Yatabar:SetButtonSize(size) end,
 
-			},
-			lockBar = {
-				type = "toggle",
-				name = L["Lock the bar"],
-				desc = L["Lock/Unlock the bar"],
-				order =3,
-				get = function() return Yatabar.isLocked end,
-				set = function(tbl,value) Yatabar:toggleLock() end,
-			},
-			keybind = {
-				type = "select",
-				name = L["Set popup key"],
-				desc = L["Set popup key desc"],
-				order = 7,
-				get = function() return Yatabar.popupKey end,
-				set = function(info, value) Yatabar:SetPopupKey(value) end,
-				values = {
-					["nokey"] = L["no key"],
-					["shift"] = L["Shift-key"],
-					["alt"] = L["Alt-key"],
-					["control"] = L["Control-key"],
-				},
-			}, 
-			hideTimerBar = {
-				name = L["Hide timer bars"],
-				type = "toggle",
-				order = 5,
-				desc = L["Hide timer bars desc"],
-				get = function() return Yatabar.hideTimerBars end,
-				set = function(frame, value) Yatabar:HideTimerBars(value) end,
-			},
-			hideMinimapIcon = {
-				name = L["Hide minimap icon"],
-				type = "toggle",
-				order = 6,
-				desc = L["Hide minimap icon desc"],
-				get = function() return Yatabar.config.minimap.hide end,
-				set = function(frame, value) Yatabar:HideMinimapIcon(value) end,
-			},
-			totems = {
-				type = "group",
-				name = "Totems",
-				args = {
-					
-				},
-			},
-		}
-	}
-
-	return options;
-end
 
 function Yatabar:OnInitialize()
 	frame = CreateFrame("Frame")
@@ -388,14 +301,14 @@ function Yatabar:CreateTotemHeader(element)
 	if self.orderTotemsInElement[element] == nil then --wenn noch keine Reihenfolge vorhanden ist dann die Totemspells einfach durchgehen
 		for idx, spell in pairs(self.availableTotems[element]) do
 			if type(spell.id) == "number" then
-				self:CreateSpellPopupButton(Yatabar["TotemHeader"..element], idx, spell.id, element)
+				self:CreatePopupButton(Yatabar["TotemHeader"..element], idx, spell.id, element)
 			end
 		end
 	else	--sonst nach reihenfolge
 		for idx, spell in pairs(self.orderTotemsInElement[element]) do
 			if  type(spell.id) == "number" and idx ~= 0 then 
 				--print("add spell", spell.name:gsub("%s+", ""), spell.id)
-				self:CreateSpellPopupButton(Yatabar["TotemHeader"..element], idx, spell.id, element, spell.name:gsub("%s+", "")) --spell.name ohne leerzeichen
+				self:CreatePopupButton(Yatabar["TotemHeader"..element], idx, spell.id, element, spell.name:gsub("%s+", "")) --spell.name ohne leerzeichen
 			end
 		end
 	end
@@ -420,74 +333,7 @@ function Yatabar:CreateTotemHeader(element)
 end
 
 
-function Yatabar:CreateSpellPopupButton(main,index, spellId, element, spellname)
-	--print("CreatePopups")
-	if index == 0 then
-		return
-	end
-	
-	--print("Spellid", spellname, spellId)
-	local name = "popupButton"..element..spellname
-	if main["popupButton"..element..spellname] == nil then
-		main["popupButton"..element..spellname] = LAB:CreateButton(name, name , main)
-	main["popupButton"..element..spellname].name = name
-	end
-	main["popupButton"..element..spellname]:ClearAllPoints()
-	main["popupButton"..element..spellname].spellId = spellId
-	main["popupButton"..element..spellname].index = index
-	main["popupButton"..element..spellname].element = element
-	main["popupButton"..element..spellname]:SetPoint("BOTTOMLEFT", main,"BOTTOMLEFT", 0,(index - 1) * Yatabar.buttonSize)
-	main["popupButton"..element..spellname]:ClearStates()
-	main["popupButton"..element..spellname]:SetAttribute('state', "spell1")
-	main["popupButton"..element..spellname]:SetAttribute('index', index)
-	--main["popupButton"..element..spellname]:SetAttribute("type", "spell");
-	--spname = GetSpellInfo(spellId)
-	--main["popupButton"..element..spellname]:SetAttribute("spell", spname);
-	main["popupButton"..element..spellname]:SetState("spell1", nil, nil)
-	main["popupButton"..element..spellname]:SetState("spell1", "spell", spellId)
-	--print(main["popupButton"..element..spellname]:GetAction("spell1"))
-	main["popupButton"..element..spellname]:ButtonContentsChanged("spell1", "spell", spellId)
-	if MSQ then
-		main["popupButton"..element..spellname]:AddToMasque(myGroup)
-	end
-	
-	main["popupButton"..element..spellname]:DisableDragNDrop(true)
-	--main["popupButton"..element..spellId]:SetScript("OnEvent", function(arg1,event) Yatabar:OnEventFunc(event, arg1, element, main["popupButton"..element..spellId]); end);
-	SecureHandlerWrapScript(main["popupButton"..element..spellname],"OnLeave",main,[[return true, ""]], [[
-		inHeader =  control:IsUnderMouse(true)
-		if not inHeader then
-			control:Run(close);
-		end	    
-	]])
 
-	SecureHandlerWrapScript(main["popupButton"..element..spellname],"OnEnter",main, [[
-		key = control:GetAttribute("key")
-		if key == "nokey" or (key == "alt" and IsAltKeyDown()) or (key == "shift" and IsShiftKeyDown()) or (key == "control" and IsControlKeyDown()) then
-			control:Run(show);
-		end
-		]]);
-
-	-- main["popupButton"..element..spellId]:SetAttribute("_onstate-mouseover", [[ 
-	-- 	print("mouseover")
-	-- 	if self:GetAttribute("index") ~= 1 then
-	-- 		return
-	-- 	end
-	-- 	key = control:GetAttribute("key")
-	-- 	print(key)
-	-- 	if self:IsUnderMouse(true) then
-	-- 		if (key == "alt" and IsAltKeyDown()) or (key == "shift" and IsShiftKeyDown()) or (key == "control" and IsControlKeyDown()) then
-	-- 			self:Run(show);
-	-- 		end
-	-- 	end 
-	-- 	]]
-	-- )
-	-- RegisterStateDriver(main["popupButton"..element..spellId], "mouseover", "[modifier:shift/ctrl/alt] key; no")
-
-	--main["popupButton"..element..spellId]:RegisterEvent("ACTIONBAR_SHOWGRID");
-	--main["popupButton"..element..spellId]:RegisterEvent("ACTIONBAR_HIDEGRID");
-	
-	
-end
 
 function Yatabar:UpdatePopupButton(button, index, spellId, element)
 	if index == 0 then
@@ -890,7 +736,7 @@ function Yatabar:SetTotemVisibility(tbl, value, element, spellId, spellname)
 	spllnm = spellname:gsub("%s+", "")
 	if value == true then
 		table.insert(self.orderTotemsInElement[element],{["id"] = spellId, ["name"] = spellname})
-			self:CreateSpellPopupButton(Yatabar["TotemHeader"..element], #self.orderTotemsInElement[element], spellId, element, spllnm)
+			self:CreatePopupButton(Yatabar["TotemHeader"..element], #self.orderTotemsInElement[element], spellId, element, spllnm)
 		for k,v in pairs (tbl.options.args.totems.args[element].args) do
 			if v.name == spellname then
 				v.args.text.name = "Position "..#self.orderTotemsInElement[element]
