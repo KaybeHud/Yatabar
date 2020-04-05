@@ -34,7 +34,7 @@ Yatabar.activateSpellOrder = {active = false, element = "", order = 1}
 Yatabar.activeTotemTimer = {}
 Yatabar.activeTotemStartTime = {}
 Yatabar.orderElements = {}
-Yatabar.hideMinimapIcon = false
+--Yatabar.hideMinimapIcon = false
 Yatabar.orderTotemsInElement = {["EARTH"] = {}, ["WATER"] = {}, ["FIRE"] = {}, ["AIR"] = {}}
 Yatabar.hideTimerBars = false
 Yatabar.MacroResetKey = "shift"
@@ -78,17 +78,16 @@ Yatabar.icon = LibStub("LibDBIcon-1.0")
 
 local defaults = 
 {
-	char = {
+	profile = {
 		orderElements = {["EARTH"] = 1, ["WATER"] = 2, ["FIRE"] = 3, ["AIR"] = 4},
 		orderTotemsInElement = {["EARTH"] = {}, ["WATER"] = {}, ["FIRE"] = {}, ["AIR"] = {}},
 		orientation = "horzup",
 		padding = 0,
 		popupKey = "nokey",
 		buttonSize = 36, 
-		minimap = { hide = false, },
+		minimap = { ["hide"] = false, },
 		hideTimerBars = false,
 		MacroResetKey = "shift",
-		hideMinimapIcon = false,
 		ElementBinding = {
 			["AIR"] = "",
 			["FIRE"] = "",
@@ -137,11 +136,11 @@ function Yatabar:OnInitialize()
 end
 
 function Yatabar:SetConfigVars()
-	self.db = LibStub("AceDB-3.0"):New("YatabarDB", defaults)
-	--self.db.RegisterCallback(self, "OnProfileChanged", "RefreshConfig")
-    --self.db.RegisterCallback(self, "OnProfileCopied", "RefreshConfig")
-    --self.db.RegisterCallback(self, "OnProfileReset", "RefreshConfig")
-	self.config = self.db.char
+	self.db = LibStub("AceDB-3.0"):New("YatabarDB", defaults,"profile")
+	self.db.RegisterCallback(self, "OnProfileChanged", "RefreshConfig")
+    self.db.RegisterCallback(self, "OnProfileCopied", "RefreshConfig")
+    self.db.RegisterCallback(self, "OnProfileReset", "RefreshConfig")
+	self.config = self.db.profile
 	self.orderElements = self.config.orderElements
 	self.orderTotemsInElement = self.config.orderTotemsInElement
 	self.buttonSize = self.config.buttonSize
@@ -162,13 +161,29 @@ function Yatabar:OnEnable()
 	LibStub("AceConfig-3.0"):RegisterOptionsTable(Yatabar.name, self.options)
 	self.optionsFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions(self.name, self.name)
 	self.optionsFrameGui = LibStub("AceConfigDialog-3.0"):Open(self.name)
-	self:LoadKeyBinding()
+	
 	--self:TestButton()
 	
 	--print("Enabled")
 end
 
-function Yatabar:RefreshConfig()
+function Yatabar:RefreshConfig(_, db)
+	print("Refresh")
+	self.config = self.db.profile
+	self.orderElements = self.config.orderElements
+	self.orderTotemsInElement = self.config.orderTotemsInElement
+	self.buttonSize = self.config.buttonSize
+	self.popupKey = self.config.popupKey
+	self.hideTimerBars = self.config.hideTimerBars
+	self.MacroResetKey = self.config.MacroResetKey
+	self.hideMinimapIcon = self.config.hideMinimapIcon
+	self.ElementBinding = self.config.ElementBinding 
+	self.totemCount = self:GetTotemCount()
+	for element, idx in pairs(Yatabar.orderElements) do
+		Yatabar:CreateTotemHeader(element)
+		Yatabar["TotemHeader"..element]:Execute([[control:Run(show)]])
+	end
+	self:SetLayout()
 end
 
 local button = nil
@@ -301,7 +316,7 @@ function Yatabar:CreateTotemHeader(element)
 
 
 	for idx, spell in pairs(self.orderTotemsInElement[element]) do
-		if  type(spell.id) == "number" and idx ~= 0 then 
+		if  type(spell.id) == "number" then --and idx ~= 0 then 
 			--print("add spell", spell.name:gsub("%s+", ""), spell.id)
 			self:CreatePopupButton(Yatabar["TotemHeader"..element], idx, spell.id, element, spell.name:gsub("%s+", "")) --spell.name ohne leerzeichen
 		end
@@ -330,23 +345,7 @@ end
 
 
 
-function Yatabar:UpdatePopupButton(button, index, spellId, element)
-	if index == 0 then
-		return
-	end
-	button:ClearAllPoints()
-	button.spellId = spellId
-	button.index = index
-	button.element = element
-	button:SetPoint("BOTTOMLEFT", main,"BOTTOMLEFT", 0,(index - 1) * Yatabar.buttonSize)
-	button:ClearStates()
-	button:SetAttribute('state', "spell1")
-	button:SetAttribute('index', index)
-	button:SetState("spell1", nil, nil)
-	button:SetState("spell1", "spell", spellId)
-	--print(button:GetAction("spell1"))
-	--button:ButtonContentsChanged("spell1", "spell", spellId)
-end
+
 
 function Yatabar:SetLayout()
 	local isVert, isRtorDn = false, false;
@@ -373,6 +372,7 @@ function Yatabar:SetLayout()
 end
 
 function Yatabar:UpdateHeaderLayout(frame, element,isVert,isRtorDn)
+	--frame:Execute([[control:Run(show)]])
 	frame:ClearAllPoints();
 	frame.statusbar:ClearAllPoints()
 	frame.statusbar.value:ClearAllPoints()
@@ -406,20 +406,15 @@ function Yatabar:UpdateHeaderLayout(frame, element,isVert,isRtorDn)
 		frame.statusbar.value:SetPoint("CENTER", frame.statusbar, "CENTER", 0, 0)
 	end
 
-	if self.orderTotemsInElement[element] == nil then --wenn noch keine Reihenfolge vorhanden ist dann die Totemspells einfach durchgehen
-		for idx, spell in ipairs(self.availableTotems[element]) do
-			if type(spell.id) == "number" then
-				Yatabar:UpdateButtonLayout(frame, element,isVert,isRtorDn, idx)
-			end
-		end
-	else	--sonst nach reihenfolge
-		for idx, spell in pairs(self.orderTotemsInElement[element]) do
-			if type(spell.id) == "number" and idx ~= 0 then
-				--print("Reihenfolge",element,spellId, idx)
-				Yatabar:UpdateButtonLayout(frame, element,isVert,isRtorDn, idx, spell.id)
-			end
+	
+	for idx, spell in pairs(self.orderTotemsInElement[element]) do
+		if type(spell.id) == "number" and idx ~= 0 then
+			--print("Reihenfolge",element,spellId, idx)
+			Yatabar:UpdateButtonLayout(frame, element,isVert,isRtorDn, idx, spell.id)
 		end
 	end
+
+	--frame:Execute([[control:Run(close)]])
 end
 
 function Yatabar:UpdateButtonLayout(frame, element,isVert,isRtorDn, idx, spellId)
@@ -467,7 +462,7 @@ function Yatabar:OnEventFunc(frame, event, arg1, ...)
 		--if Yatabar.firstRun == false then
 		self:GetTotemSpellsByElement()
 		self:SetOrderTotemSpells()
-		
+		self:LoadKeyBinding()
 		
 		--self:GetTotemSpells()
 		for element, spell in pairs(Yatabar.availableTotems) do
@@ -611,14 +606,7 @@ function Yatabar:SetOrderTotemSpells()
 end
 
 
-function Yatabar:GetTotemPosition(element, spellId)
-	for idx, spell in ipairs (self.orderTotemsInElement[element]) do
-		if spell.id == spellId then
-			return idx
-		end
-	end
-	return 0
-end
+
 
 function Yatabar:AddOptionsForTotems()
 	for element, order in pairs(self.orderElements) do
@@ -706,7 +694,7 @@ function Yatabar:AddOptionsForTotem(idx, element, spellId, spellname)
 				text = {
 					type = "description",
 					order = 1,
-					name = L["Position "]..Yatabar:GetTotemPosition(element, spellId) or 0,
+					name = L["Position "]..Yatabar:GetTotemPosition(element, spellId),
 				},
 			},
 		}
@@ -723,6 +711,16 @@ function Yatabar:IsTotemVisible(element, spellId)
 		end
 	end
 	return false
+end
+
+function Yatabar:GetTotemPosition(element, spellId)
+	for idx, spell in pairs (self.orderTotemsInElement[element]) do
+		if spell.id == spellId then
+			print(spell.name, idx)
+			return idx
+		end
+	end
+	return 0
 end
 
 function Yatabar:SetTotemVisibility(tbl, value, element, spellId, spellname)
@@ -749,7 +747,7 @@ function Yatabar:SetTotemVisibility(tbl, value, element, spellId, spellname)
 		Yatabar["TotemHeader"..element]["popupButton"..element..spllnm].index = 0
 		Yatabar["TotemHeader"..element]["popupButton"..element..spllnm]:SetAttribute('index', 0)
 		Yatabar["TotemHeader"..element]["popupButton"..element..spllnm]:Hide()
-		Yatabar["TotemHeader"..element]["popupButton"..element..spllnm]:ClearStates()
+		--Yatabar["TotemHeader"..element]["popupButton"..element..spllnm]:ClearStates()
 		Yatabar["TotemHeader"..element]["popupButton"..element..spllnm] = nil
 		for k,v in pairs (tbl.options.args.totems.args[element].args) do
 			if v.name == spellname then

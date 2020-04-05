@@ -9,9 +9,9 @@ end
 
 function Yatabar:CreatePopupButton(main,index, spellId, element, spellname)
 	--print("CreatePopups")
-	if index == 0 then
-		return
-	end
+	--if index == 0 then
+	--	return
+	--end
 	
 	--print("Spellid", spellname, spellId)
 	local name = "popupButton"..element..spellname
@@ -100,4 +100,22 @@ function Yatabar:HideTooltip(button)
 	--if GameTooltip:IsOwned(self.button) then
 		GameTooltip:Hide();
 	--end
+end
+
+function Yatabar:UpdatePopupButton(button, index, spellId, element)
+	if index == 0 then
+		return
+	end
+	button:ClearAllPoints()
+	button.spellId = spellId
+	button.index = index
+	button.element = element
+	button:SetPoint("BOTTOMLEFT", main,"BOTTOMLEFT", 0,(index - 1) * Yatabar.buttonSize)
+	button:ClearStates()
+	button:SetAttribute('state', "spell1")
+	button:SetAttribute('index', index)
+	button:SetState("spell1", nil, nil)
+	button:SetState("spell1", "spell", spellId)
+	--print(button:GetAction("spell1"))
+	--button:ButtonContentsChanged("spell1", "spell", spellId)
 end

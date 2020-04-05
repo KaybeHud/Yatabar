@@ -79,7 +79,7 @@ function Yatabar:InitOptions()
 				type = "toggle",
 				order = 6,
 				desc = L["Hide minimap icon desc"],
-				get = function() return Yatabar.config.minimap.hide end,
+				get = function() if Yatabar.config.minimap then return Yatabar.config.minimap.hide else return false end end,
 				set = function(frame, value) Yatabar:HideMinimapIcon(value) end,
 			},
 			segment = {
@@ -95,7 +95,7 @@ function Yatabar:InitOptions()
 				--get = function() if Yatabar.config.activeSet == nil then return "" end; return Yatabar.config.activeSet end,
 				--set = function(info, value) Yatabar.LoadSet(value) end,
 				get    = function() return Yatabar.db:GetCurrentProfile() end,
-				set    = function(_, v) Yatabar.db:SetProfile(v) end,
+				set    = function(_, v) Yatabar:LoadProfile(v) end,
 				validate = function() return not InCombatLockdown() or L["Profile cannot be changed in combat"] end,
 				disabled = InCombatLockdown,
 				values = Yatabar:GetAllProfiles(),
@@ -159,16 +159,25 @@ end
 function Yatabar:GetAllProfiles() 
 	local profiles = {}
 	for _, name in pairs(Yatabar.db:GetProfiles()) do 
-		table.insert(profiles, name)
+		profiles[name] = name
 	end
 	return profiles
 end
 
-function Yatabar:LoadSet(setToLoad)
-	local set = Yatabar.config.sets[setToLoad]
-	Yatabar.orderElements = set.orderElements
-	Yatabar.orderTotemsInElement = set.orderTotemsInElement
-	Yatabar.ElementBinding = set.ElementBinding
+function Yatabar:LoadProfile(profile)
+	for element, idx in pairs(Yatabar.orderElements) do
+		for idx, spell in pairs(self.availableTotems[element]) do
+			if type(spell) ~= "number" and type(spell.name) == "string" then
+				if Yatabar["TotemHeader"..element]["popupButton"..element..spell.name:gsub("%s+", "")] ~= nil then
+					print(spell.name:gsub("%s+", ""), "vorhanden")
+					Yatabar["TotemHeader"..element]["popupButton"..element..spell.name:gsub("%s+", "")]:SetAttribute('index', 0)
+					Yatabar["TotemHeader"..element]["popupButton"..element..spell.name:gsub("%s+", "")]:Hide()
+				end
+			end
+		end
+		--Yatabar["TotemHeader"..element]:Hide()
+	end
+	Yatabar.db:SetProfile(profile)
 end
 
 function Yatabar:OnClickSave(arg1)
