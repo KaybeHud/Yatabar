@@ -138,6 +138,9 @@ end
 
 function Yatabar:SetConfigVars()
 	self.db = LibStub("AceDB-3.0"):New("YatabarDB", defaults)
+	--self.db.RegisterCallback(self, "OnProfileChanged", "RefreshConfig")
+    --self.db.RegisterCallback(self, "OnProfileCopied", "RefreshConfig")
+    --self.db.RegisterCallback(self, "OnProfileReset", "RefreshConfig")
 	self.config = self.db.char
 	self.orderElements = self.config.orderElements
 	self.orderTotemsInElement = self.config.orderTotemsInElement
@@ -163,6 +166,9 @@ function Yatabar:OnEnable()
 	--self:TestButton()
 	
 	--print("Enabled")
+end
+
+function Yatabar:RefreshConfig()
 end
 
 local button = nil

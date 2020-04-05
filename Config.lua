@@ -92,9 +92,14 @@ function Yatabar:InitOptions()
 				name = L["Select set"],
 				desc = L["Select set desc"],
 				order = 9,
-				get = function() if Yatabar.config.activeSet == nil then return "" end; return Yatabar.config.activeSet end,
-				set = function(info, value) Yatabar.LoadSet(value) end,
-				values = Yatabar:GetSets(),
+				--get = function() if Yatabar.config.activeSet == nil then return "" end; return Yatabar.config.activeSet end,
+				--set = function(info, value) Yatabar.LoadSet(value) end,
+				get    = function() return Yatabar.db:GetCurrentProfile() end,
+				set    = function(_, v) Yatabar.db:SetProfile(v) end,
+				validate = function() return not InCombatLockdown() or L["Profile cannot be changed in combat"] end,
+				disabled = InCombatLockdown,
+				values = Yatabar:GetAllProfiles(),
+				--values = Yatabar:GetSets(),
 			},
 			saveSet = {
 				type = "execute",
@@ -102,9 +107,11 @@ function Yatabar:InitOptions()
 				func = function(arg1) print(arg1) end,
 			},
 			createNewSet = {
-				type = "execute",
+				type = "input",
 				name = L["Create new set"],
-				func = function() Yatabar:ShowSaveSetFrame() end,
+				get = false,
+				set = function(_, v) Yatabar.db:SetProfile(v) end,
+				--func = function() Yatabar:ShowSaveSetFrame() end,
 			}, 
 			deleteSet = {
 				type = "execute",
@@ -149,12 +156,12 @@ function Yatabar:ShowSaveSetFrame()
 	
 end
 
-function Yatabar:GetSets() 
-	local sets = {}
-	for set, val in pairs(Yatabar.config.sets) do 
-		table.insert(sets, set)
+function Yatabar:GetAllProfiles() 
+	local profiles = {}
+	for _, name in pairs(Yatabar.db:GetProfiles()) do 
+		table.insert(profiles, name)
 	end
-	return sets
+	return profiles
 end
 
 function Yatabar:LoadSet(setToLoad)
