@@ -35,6 +35,11 @@ if not L then return end
 	L["Hide minimap icon"] =  "Hide minimap icon"
 	L["Hide minimap icon desc"] =  "Hide the minimap icon"
 	L["key already bind"] = "key was binded to: "
+	L["Select set"] = "Select set"
+	L["Select set desc"] = "Select the totem set"
+	L["Save set"] = "Save set"
+	L["Create new set"] = "Create new set"
+	L["Delete set"] = "Delete set"
 
 	L["Hides the default mainbar"] = true 
 	L["Button Lock"] = true

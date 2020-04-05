@@ -1,5 +1,7 @@
 if not (Yatabar) then return; end;
 local L = LibStub("AceLocale-3.0"):GetLocale(Yatabar.name, true)
+local AceGUI = LibStub("AceGUI-3.0")
+local newSetName = ""
 
 function Yatabar:InitOptions()
 	local options = {
@@ -80,6 +82,35 @@ function Yatabar:InitOptions()
 				get = function() return Yatabar.config.minimap.hide end,
 				set = function(frame, value) Yatabar:HideMinimapIcon(value) end,
 			},
+			segment = {
+				type = "header",
+				name = "",
+				order = 8,
+			},
+			sets = {
+				type = "select",
+				name = L["Select set"],
+				desc = L["Select set desc"],
+				order = 9,
+				get = function() if Yatabar.config.activeSet == nil then return "" end; return Yatabar.config.activeSet end,
+				set = function(info, value) Yatabar.LoadSet(value) end,
+				values = Yatabar:GetSets(),
+			},
+			saveSet = {
+				type = "execute",
+				name = L["Save set"],
+				func = function(arg1) print(arg1) end,
+			},
+			createNewSet = {
+				type = "execute",
+				name = L["Create new set"],
+				func = function() Yatabar:ShowSaveSetFrame() end,
+			}, 
+			deleteSet = {
+				type = "execute",
+				name = L["Delete set"],
+				func = function(arg1) print(arg1) end,
+			},
 			totems = {
 				type = "group",
 				name = "Totems",
@@ -91,4 +122,51 @@ function Yatabar:InitOptions()
 	}
 
 	return options;
+end
+
+function Yatabar:ShowSaveSetFrame()
+	local f = AceGUI:Create("Frame")
+	f:SetCallback("OnClose",function(widget) AceGUI:Release(widget) end)
+	f:SetWidth(300)
+	f:SetHeight(120)
+	f:SetTitle("Save Set")
+	f:SetStatusText("Set to save")
+	f:SetLayout("Flow")
+	-- Create a button
+	local btn = AceGUI:Create("Button")
+	local edtBox = AceGUI:Create("EditBox")
+	edtBox:DisableButton(true) 
+	edtBox:SetMaxLetters(120)
+	edtBox:SetFocus()
+	btn:SetRelativeWidth(0.3)
+	btn:SetText("Save")
+	btn:SetCallback("OnClick", function() f:SetStatusText("Set "..edtBox:GetText().." saved");Yatabar:OnClickSave(edtBox:GetText()) end)
+
+	edtBox:SetRelativeWidth(0.7)
+	f:AddChild(edtBox)
+	-- Add the button to the container
+	f:AddChild(btn)
+	
+end
+
+function Yatabar:GetSets() 
+	local sets = {}
+	for set, val in pairs(Yatabar.config.sets) do 
+		table.insert(sets, set)
+	end
+	return sets
+end
+
+function Yatabar:LoadSet(setToLoad)
+	local set = Yatabar.config.sets[setToLoad]
+	Yatabar.orderElements = set.orderElements
+	Yatabar.orderTotemsInElement = set.orderTotemsInElement
+	Yatabar.ElementBinding = set.ElementBinding
+end
+
+function Yatabar:OnClickSave(arg1)
+	Yatabar.config.activeSet = arg1
+	local set = {orderElements = Yatabar.orderElements,
+	orderTotemsInElement = Yatabar.orderTotemsInElement, ElementBinding = Yatabar.ElementBinding}
+	Yatabar.config.sets[arg1] = set
 end

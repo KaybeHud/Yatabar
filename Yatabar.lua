@@ -97,9 +97,8 @@ local defaults =
 		},
 		xOfs = 0,
 		yOfs = 0,
-		defaults = {},
-		activeProfile = {},
-		profiles = {},
+		activeSet = {},
+		sets = {},
 
 	}
 }
@@ -295,23 +294,13 @@ function Yatabar:CreateTotemHeader(element)
 	RegisterStateDriver(Yatabar["TotemHeader"..element], "mouseover", "[modifier:shift/ctrl/alt] key; no")
 
 
-	-- w
-
-	--prüfen ob Reihenfolge vorhanden ist
-	if self.orderTotemsInElement[element] == nil then --wenn noch keine Reihenfolge vorhanden ist dann die Totemspells einfach durchgehen
-		for idx, spell in pairs(self.availableTotems[element]) do
-			if type(spell.id) == "number" then
-				self:CreatePopupButton(Yatabar["TotemHeader"..element], idx, spell.id, element)
-			end
-		end
-	else	--sonst nach reihenfolge
-		for idx, spell in pairs(self.orderTotemsInElement[element]) do
-			if  type(spell.id) == "number" and idx ~= 0 then 
-				--print("add spell", spell.name:gsub("%s+", ""), spell.id)
-				self:CreatePopupButton(Yatabar["TotemHeader"..element], idx, spell.id, element, spell.name:gsub("%s+", "")) --spell.name ohne leerzeichen
-			end
+	for idx, spell in pairs(self.orderTotemsInElement[element]) do
+		if  type(spell.id) == "number" and idx ~= 0 then 
+			--print("add spell", spell.name:gsub("%s+", ""), spell.id)
+			self:CreatePopupButton(Yatabar["TotemHeader"..element], idx, spell.id, element, spell.name:gsub("%s+", "")) --spell.name ohne leerzeichen
 		end
 	end
+	
 
 		Yatabar["TotemHeader"..element]:Execute ( [[show = [=[
 			local popups = newtable(self:GetChildren())
@@ -1096,16 +1085,22 @@ function Yatabar:StartTimer(self, guid, spellId)
 	end
 	--print("StartTimer", guid, spellId)
 	
-	local founded = false;
+	local found = false;
 	local name, startTime, duration, element;
 	local countdown;
 	local i;
 	name = GetSpellInfo(spellId)
 
+	if Yatabar.activeTotemTimer ~= nil then
+		for elem, spell in pairs(Yatabar.activeTotemTimer) do
+			button = _G["popupButton"..elem..spell.name:gsub("%s+", "")];
+			button:SetChecked(false)
+		end
+	end
 	for elmnt, spells in pairs(self.availableTotems) do
 		for idx, spell in ipairs(spells) do
 			if spell.name == name then
-				founded = true
+				found = true
 				duration =  GetTotemTimeLeft(Totems[elmnt])--spell.duration
 				startTime = GetTime()
 				element = elmnt
@@ -1115,7 +1110,7 @@ function Yatabar:StartTimer(self, guid, spellId)
 	end
 	
 
-	if founded then
+	if found then
 		Yatabar["TotemHeader"..element].statusbar:SetMinMaxValues(0, duration);
 		Yatabar.activeTotemTimer[element] = {["id"] = spellId, ["duration"] = duration, ["name"] = name};
 		Yatabar.activeTotemStartTime[element] = startTime
@@ -1163,7 +1158,7 @@ function OnUpdate(arg1, elapsed)
 	local countdown;
 	local timeleft;
 	local duration;
-	local name; --, spell;
+	--local name; --, spell;
 	local element;
 	local i;
 
@@ -1174,8 +1169,11 @@ function OnUpdate(arg1, elapsed)
 				--print("kein button:"..element..spell.id)
 				return
 			end
+			local start, dur, enable, modRate = GetSpellCooldown(spell.name)
+			CooldownFrame_Set(button.cooldown, start, dur, enable)
 
 			isActive = false;
+			--button:SetChecked(false);
 		if Yatabar.activeTotemStartTime[element] ~= nil then
 
 			countdown = Yatabar["TotemHeader"..element].statusbar;
@@ -1199,7 +1197,7 @@ function OnUpdate(arg1, elapsed)
 				end
 			else
 				isActive = Yatabar.activeTotemStartTime[element] ~= 0;
-				print("isActive:",isActive)
+				--print("isActive:",isActive)
 			end
 
 			if isActive then
