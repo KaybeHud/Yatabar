@@ -167,8 +167,9 @@ function Yatabar:OnEnable()
 	--print("Enabled")
 end
 
-function Yatabar:RefreshConfig(_, db)
+function Yatabar:RefreshConfig(arg1, db)
 	print("Refresh")
+	--print(arg1)
 	self.config = self.db.profile
 	self.orderElements = self.config.orderElements
 	self.orderTotemsInElement = self.config.orderTotemsInElement
@@ -179,9 +180,26 @@ function Yatabar:RefreshConfig(_, db)
 	self.hideMinimapIcon = self.config.hideMinimapIcon
 	self.ElementBinding = self.config.ElementBinding 
 	self.totemCount = self:GetTotemCount()
+	
 	for element, idx in pairs(Yatabar.orderElements) do
+		if Yatabar.orderElements[element][1] == nil then
+			print("ist leer")
+			Yatabar:SetOrderTotemSpells()
+		end
 		Yatabar:CreateTotemHeader(element)
 		Yatabar["TotemHeader"..element]:Execute([[control:Run(show)]])
+		-- for k,v in pairs (self.options.args.totems.args[element].args) do
+		-- 	if type(k) == "number" then
+		-- 		for order, spell in pairs(self.orderTotemsInElement[element]) do
+		-- 			if v.name == spell.name then	
+		-- 				v.args.text.name = L["Position "]..order
+		-- 				break;
+		-- 			else
+		-- 				v.args.text.name = L["Position "]..0
+		-- 			end	
+		-- 		end
+		-- 	end
+		-- end
 	end
 	self:SetLayout()
 end
@@ -694,7 +712,7 @@ function Yatabar:AddOptionsForTotem(idx, element, spellId, spellname)
 				text = {
 					type = "description",
 					order = 1,
-					name = L["Position "]..Yatabar:GetTotemPosition(element, spellId),
+					name = function() return L["Position "]..Yatabar:GetTotemPosition(element, spellId) end ,
 				},
 			},
 		}
@@ -716,7 +734,7 @@ end
 function Yatabar:GetTotemPosition(element, spellId)
 	for idx, spell in pairs (self.orderTotemsInElement[element]) do
 		if spell.id == spellId then
-			print(spell.name, idx)
+			--print(spell.name, idx)
 			return idx
 		end
 	end
@@ -880,9 +898,9 @@ function Yatabar:SetTotemOrder(tbl,mousebutton, element, spellId)
 	--Set position text in Config Dialog
 	for k,v in pairs (tbl.options.args.totems.args[element].args) do
 		if v.name == tbl.option.name then
-			v.args.text.name = "Position "..newPosition
+			v.args.text.name = L["Position "]..newPosition
 		elseif v.name == spellnameToSwitch then
-			v.args.text.name = "Position "..currentPosition
+			v.args.text.name = L["Position "]..currentPosition
 		end
 	end
 
@@ -1098,7 +1116,9 @@ function Yatabar:StartTimer(self, guid, spellId)
 	if Yatabar.activeTotemTimer ~= nil then
 		for elem, spell in pairs(Yatabar.activeTotemTimer) do
 			button = _G["popupButton"..elem..spell.name:gsub("%s+", "")];
-			button:SetChecked(false)
+			if button ~= nil then
+				button:SetChecked(false)
+			end
 		end
 	end
 	for elmnt, spells in pairs(self.availableTotems) do
@@ -1122,6 +1142,7 @@ function Yatabar:StartTimer(self, guid, spellId)
 	-- 	if countdown and not self.hideCooldowns then
 	-- 		countdown:SetStatusBarColor(unpack(SCHOOL_COLORS));
 	-- 	end
+	-- war vorher ohne "self"
 		OnUpdate()
 	end
 end

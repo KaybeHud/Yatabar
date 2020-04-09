@@ -92,26 +92,17 @@ function Yatabar:InitOptions()
 				name = L["Select set"],
 				desc = L["Select set desc"],
 				order = 9,
-				--get = function() if Yatabar.config.activeSet == nil then return "" end; return Yatabar.config.activeSet end,
-				--set = function(info, value) Yatabar.LoadSet(value) end,
 				get    = function() return Yatabar.db:GetCurrentProfile() end,
-				set    = function(_, v) Yatabar:LoadProfile(v) end,
+				set    = function(tbl, v) Yatabar:LoadProfile(v) end,
 				validate = function() return not InCombatLockdown() or L["Profile cannot be changed in combat"] end,
 				disabled = InCombatLockdown,
-				values = Yatabar:GetAllProfiles(),
-				--values = Yatabar:GetSets(),
-			},
-			saveSet = {
-				type = "execute",
-				name = L["Save set"],
-				func = function(arg1) print(arg1) end,
+				values = function() return Yatabar:GetAllProfiles() end,
 			},
 			createNewSet = {
 				type = "input",
 				name = L["Create new set"],
 				get = false,
 				set = function(_, v) Yatabar.db:SetProfile(v) end,
-				--func = function() Yatabar:ShowSaveSetFrame() end,
 			}, 
 			deleteSet = {
 				type = "execute",
@@ -131,30 +122,30 @@ function Yatabar:InitOptions()
 	return options;
 end
 
-function Yatabar:ShowSaveSetFrame()
-	local f = AceGUI:Create("Frame")
-	f:SetCallback("OnClose",function(widget) AceGUI:Release(widget) end)
-	f:SetWidth(300)
-	f:SetHeight(120)
-	f:SetTitle("Save Set")
-	f:SetStatusText("Set to save")
-	f:SetLayout("Flow")
-	-- Create a button
-	local btn = AceGUI:Create("Button")
-	local edtBox = AceGUI:Create("EditBox")
-	edtBox:DisableButton(true) 
-	edtBox:SetMaxLetters(120)
-	edtBox:SetFocus()
-	btn:SetRelativeWidth(0.3)
-	btn:SetText("Save")
-	btn:SetCallback("OnClick", function() f:SetStatusText("Set "..edtBox:GetText().." saved");Yatabar:OnClickSave(edtBox:GetText()) end)
+-- function Yatabar:ShowSaveSetFrame()
+-- 	local f = AceGUI:Create("Frame")
+-- 	f:SetCallback("OnClose",function(widget) AceGUI:Release(widget) end)
+-- 	f:SetWidth(300)
+-- 	f:SetHeight(120)
+-- 	f:SetTitle("Save Set")
+-- 	f:SetStatusText("Set to save")
+-- 	f:SetLayout("Flow")
+-- 	-- Create a button
+-- 	local btn = AceGUI:Create("Button")
+-- 	local edtBox = AceGUI:Create("EditBox")
+-- 	edtBox:DisableButton(true) 
+-- 	edtBox:SetMaxLetters(120)
+-- 	edtBox:SetFocus()
+-- 	btn:SetRelativeWidth(0.3)
+-- 	btn:SetText("Save")
+-- 	btn:SetCallback("OnClick", function() f:SetStatusText("Set "..edtBox:GetText().." saved");Yatabar:OnClickSave(edtBox:GetText()) end)
 
-	edtBox:SetRelativeWidth(0.7)
-	f:AddChild(edtBox)
-	-- Add the button to the container
-	f:AddChild(btn)
+-- 	edtBox:SetRelativeWidth(0.7)
+-- 	f:AddChild(edtBox)
+-- 	-- Add the button to the container
+-- 	f:AddChild(btn)
 	
-end
+-- end
 
 function Yatabar:GetAllProfiles() 
 	local profiles = {}
@@ -169,7 +160,7 @@ function Yatabar:LoadProfile(profile)
 		for idx, spell in pairs(self.availableTotems[element]) do
 			if type(spell) ~= "number" and type(spell.name) == "string" then
 				if Yatabar["TotemHeader"..element]["popupButton"..element..spell.name:gsub("%s+", "")] ~= nil then
-					print(spell.name:gsub("%s+", ""), "vorhanden")
+					--print(spell.name:gsub("%s+", ""), "vorhanden")
 					Yatabar["TotemHeader"..element]["popupButton"..element..spell.name:gsub("%s+", "")]:SetAttribute('index', 0)
 					Yatabar["TotemHeader"..element]["popupButton"..element..spell.name:gsub("%s+", "")]:Hide()
 				end
@@ -177,12 +168,13 @@ function Yatabar:LoadProfile(profile)
 		end
 		--Yatabar["TotemHeader"..element]:Hide()
 	end
+	
 	Yatabar.db:SetProfile(profile)
 end
 
-function Yatabar:OnClickSave(arg1)
-	Yatabar.config.activeSet = arg1
-	local set = {orderElements = Yatabar.orderElements,
-	orderTotemsInElement = Yatabar.orderTotemsInElement, ElementBinding = Yatabar.ElementBinding}
-	Yatabar.config.sets[arg1] = set
-end
+-- function Yatabar:OnClickSave(arg1)
+-- 	Yatabar.config.activeSet = arg1
+-- 	local set = {orderElements = Yatabar.orderElements,
+-- 	orderTotemsInElement = Yatabar.orderTotemsInElement, ElementBinding = Yatabar.ElementBinding}
+-- 	Yatabar.config.sets[arg1] = set
+-- end

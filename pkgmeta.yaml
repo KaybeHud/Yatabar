@@ -1,4 +1,4 @@
 package-as: Yatabar
 manual-changelog: CHANGES.txt
-required-dependencies: [LibActionButton-1.0, Ace3]
+required-dependencies: [Ace3]
 optional-dependencies: [Masque, LibDataBroker-1.1, LibDBIcon-1.0]
