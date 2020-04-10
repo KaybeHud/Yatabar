@@ -14,52 +14,52 @@ function Yatabar:CreatePopupButton(main,index, spellId, element, spellname)
 	--end
 	
 	--print("Spellid", spellname, spellId)
-	local name = "popupButton"..element..spellname
-	if main["popupButton"..element..spellname] == nil then
-		main["popupButton"..element..spellname] = CreateFrame("CheckButton", name, main, "SecureHandlerStateTemplate, SecureHandlerEnterLeaveTemplate, SecureActionButtonTemplate,ActionButtonTemplate") --LAB:CreateButton(name, name , main)
-	main["popupButton"..element..spellname].name = name
+	local name = "popupButton"..element..spellname:gsub("%s+", "")
+	if main[name] == nil then
+		main[name] = CreateFrame("CheckButton", name, main, "SecureHandlerStateTemplate, SecureHandlerEnterLeaveTemplate, SecureActionButtonTemplate,ActionButtonTemplate") --LAB:CreateButton(name, name , main)
+	main[name].name = name
 	end
-	main["popupButton"..element..spellname]:ClearAllPoints()
-	main["popupButton"..element..spellname].spellId = spellId
-	main["popupButton"..element..spellname].index = index
-	main["popupButton"..element..spellname].element = element
-	main["popupButton"..element..spellname]:SetPoint("BOTTOMLEFT", main,"BOTTOMLEFT", 0,(index - 1) * Yatabar.buttonSize)
+	main[name]:ClearAllPoints()
+	main[name].spellId = spellId
+	main[name].index = index
+	main[name].element = element
+	main[name]:SetPoint("BOTTOMLEFT", main,"BOTTOMLEFT", 0,(index - 1) * Yatabar.buttonSize)
 
-	main["popupButton"..element..spellname]:SetAttribute('index', index)
-	main["popupButton"..element..spellname]:SetAttribute("type1", "spell");
-	spname, _, icon = GetSpellInfo(spellId)
-	main["popupButton"..element..spellname]:SetAttribute("spell", spname);
-	main["popupButton"..element..spellname]:SetAttribute("spellId", spellId);
+	main[name]:SetAttribute('index', index)
+	main[name]:SetAttribute("type1", "spell");
+	_, _, icon = GetSpellInfo(spellname)
+	main[name]:SetAttribute("spell", spellname);
+	main[name]:SetAttribute("spellId", spellId);
 
-	main["popupButton"..element..spellname]:SetScript("OnEnter", function() self:ShowTooltip(main["popupButton"..element..spellname]); end);
-	main["popupButton"..element..spellname]:SetScript("OnLeave", function() self:HideTooltip(main["popupButton"..element..spellname]); end);
+	main[name]:SetScript("OnEnter", function() self:ShowTooltip(main[name]); end);
+	main[name]:SetScript("OnLeave", function() self:HideTooltip(main[name]); end);
 	
 	_G[name.."Icon"]:SetTexture(icon)
-	main["popupButton"..element..spellname].cooldown = _G[name.."Cooldown"];
+	main[name].cooldown = _G[name.."Cooldown"];
 	
-	main["popupButton"..element..spellname].cooldown:SetEdgeTexture("Interface\\Cooldown\\edge");
-	main["popupButton"..element..spellname].cooldown:SetSwipeColor(0, 0, 0);
-	main["popupButton"..element..spellname].cooldown:SetHideCountdownNumbers(false);
-	main["popupButton"..element..spellname].cooldown.currentCooldownType = COOLDOWN_TYPE_NORMAL;
-	main["popupButton"..element..spellname].cooldown:Show()
+	main[name].cooldown:SetEdgeTexture("Interface\\Cooldown\\edge");
+	main[name].cooldown:SetSwipeColor(0, 0, 0);
+	main[name].cooldown:SetHideCountdownNumbers(false);
+	main[name].cooldown.currentCooldownType = COOLDOWN_TYPE_NORMAL;
+	main[name].cooldown:Show()
 	
 	
 	--print(main["popupButton"..element..spellname]:GetAction("spell1"))
 	
 	if MSQ then
 		if myGroup then
-			myGroup:AddButton(main["popupButton"..element..spellname])		
+			myGroup:AddButton(main[name])		
 		end
 	end
 	
-	SecureHandlerWrapScript(main["popupButton"..element..spellname],"OnLeave",main,[[return true, ""]], [[
+	SecureHandlerWrapScript(main[name],"OnLeave",main,[[return true, ""]], [[
 		inHeader =  control:IsUnderMouse(true)
 		if not inHeader then
 			control:Run(close);
 		end	    
 	]])
 
-	SecureHandlerWrapScript(main["popupButton"..element..spellname],"OnEnter",main, [[
+	SecureHandlerWrapScript(main[name],"OnEnter",main, [[
 		key = control:GetAttribute("key")
 		if key == "nokey" or (key == "alt" and IsAltKeyDown()) or (key == "shift" and IsShiftKeyDown()) or (key == "control" and IsControlKeyDown()) then
 			control:Run(show);
@@ -91,6 +91,8 @@ end
 function Yatabar:ShowTooltip(button)
 	--if(Klappa2.config.bars[self.barid].tooltip) then
 		--GameTooltip:SetOwner(self.button);
+		
+		GameTooltip:SetOwner(UIParent, "ANCHOR_NONE"); 
 		GameTooltip:SetSpellByID(button:GetAttribute("spellId"))
 		--GameTooltip:SetAction(self.button.id);
 	--end

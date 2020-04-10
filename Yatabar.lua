@@ -98,6 +98,8 @@ local defaults =
 		yOfs = 0,
 		activeSet = {},
 		sets = {},
+		point = "CENTER",
+		relativePoint = "CENTER"
 
 	}
 }
@@ -132,6 +134,8 @@ function Yatabar:OnInitialize()
 	end
 	if Yatabar.icon then
 		Yatabar.icon:Register(Yatabar.name, ldb, not Yatabar.config.minimap)
+		Yatabar.minimapButton = Yatabar.icon:GetMinimapButton(Yatabar.name)
+		print(Yatabar.minimapButton:GetPoint())
 	end
 end
 
@@ -139,7 +143,8 @@ function Yatabar:SetConfigVars()
 	self.db = LibStub("AceDB-3.0"):New("YatabarDB", defaults,"profile")
 	self.db.RegisterCallback(self, "OnProfileChanged", "RefreshConfig")
     self.db.RegisterCallback(self, "OnProfileCopied", "RefreshConfig")
-    self.db.RegisterCallback(self, "OnProfileReset", "RefreshConfig")
+	self.db.RegisterCallback(self, "OnProfileReset", "RefreshConfig")
+	self.db.RegisterCallback(self, "OnNewProfile", "OnNewProfile")
 	self.config = self.db.profile
 	self.orderElements = self.config.orderElements
 	self.orderTotemsInElement = self.config.orderTotemsInElement
@@ -156,19 +161,33 @@ end
 function Yatabar:OnEnable()
 	self.totemCount = self:GetTotemCount()
 	--self:LoadPosition()
+	print(self.config.xOfs, self.config.yOfs)
 	self:CreateBar()
 	self:GetTotemSpellsByElement()
-	LibStub("AceConfig-3.0"):RegisterOptionsTable(Yatabar.name, self.options)
+	self.ac = LibStub("AceConfig-3.0"):RegisterOptionsTable(Yatabar.name, self.options)
+	
 	self.optionsFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions(self.name, self.name)
 	self.optionsFrameGui = LibStub("AceConfigDialog-3.0"):Open(self.name)
-	
+	Yatabar.minimapButton = Yatabar.icon:GetMinimapButton(Yatabar.name)
+	print(Yatabar.minimapButton:GetPoint())
 	--self:TestButton()
 	
 	--print("Enabled")
 end
 
+function Yatabar:OnNewProfile(db, profile)
+	print("new Profile")
+	-- Yatabar:SetOrderTotemSpells()
+	-- for element, idx in pairs(Yatabar.orderElements) do
+	-- 	Yatabar:CreateTotemHeader(element)
+	-- 	Yatabar["TotemHeader"..element]:Execute([[control:Run(show)]])
+	-- 	Yatabar["TotemHeader"..element]:Execute([[control:Run(close)]])
+	-- end
+	-- self:SetLayout()
+end
+
 function Yatabar:RefreshConfig(arg1, db)
-	print("Refresh")
+	--print("Refresh")
 	--print(arg1)
 	self.config = self.db.profile
 	self.orderElements = self.config.orderElements
@@ -180,14 +199,11 @@ function Yatabar:RefreshConfig(arg1, db)
 	self.hideMinimapIcon = self.config.hideMinimapIcon
 	self.ElementBinding = self.config.ElementBinding 
 	self.totemCount = self:GetTotemCount()
-	
+	Yatabar:SetOrderTotemSpells()
 	for element, idx in pairs(Yatabar.orderElements) do
-		if Yatabar.orderElements[element][1] == nil then
-			print("ist leer")
-			Yatabar:SetOrderTotemSpells()
-		end
 		Yatabar:CreateTotemHeader(element)
 		Yatabar["TotemHeader"..element]:Execute([[control:Run(show)]])
+		Yatabar["TotemHeader"..element]:Execute([[control:Run(close)]])
 		-- for k,v in pairs (self.options.args.totems.args[element].args) do
 		-- 	if type(k) == "number" then
 		-- 		for order, spell in pairs(self.orderTotemsInElement[element]) do
@@ -247,7 +263,7 @@ end)
 function Yatabar:CreateBar()
 	--print("CreateBar") 
 	Yatabar.bar = CreateFrame("Frame", "YatabarBar", UIParent)
-	Yatabar.bar:SetPoint("CENTER",UIParent,"CENTER", self.db.char.xOfs, self.db.char.yOfs)
+	Yatabar.bar:SetPoint(self.config.point,UIParent,self.config.relativePoint, self.config.xOfs, self.config.yOfs)
 	Yatabar.bar.name = "Yatabar.bar"
 
 	Yatabar.bar:SetWidth(self.buttonSize * Yatabar.totemCount + (2*self.frameBorder));
@@ -336,7 +352,7 @@ function Yatabar:CreateTotemHeader(element)
 	for idx, spell in pairs(self.orderTotemsInElement[element]) do
 		if  type(spell.id) == "number" then --and idx ~= 0 then 
 			--print("add spell", spell.name:gsub("%s+", ""), spell.id)
-			self:CreatePopupButton(Yatabar["TotemHeader"..element], idx, spell.id, element, spell.name:gsub("%s+", "")) --spell.name ohne leerzeichen
+			self:CreatePopupButton(Yatabar["TotemHeader"..element], idx, spell.id, element, spell.name) --spell.name ohne leerzeichen
 		end
 	end
 	
@@ -469,10 +485,6 @@ end
 function Yatabar:OnEventFunc(frame, event, arg1, ...)
 	if event == "PLAYER_ENTERING_WORLD"  or event == "PLAYER_ALIVE" or event == "PLAYER_LEVEL_UP"   then
 		--print(event)
-		--spellname, rank, icon, castTime, minRange, maxRange, spellId = GetSpellInfo(8071)
-		--print(spellname, spellId)
-		--spellname, rank, icon, castTime, minRange, maxRange, spellId = GetSpellInfo(spellname) 
-		--print(spellname, spellId)
 	end
 	if event == "SPELLS_CHANGED" then
 		--print(event)
@@ -501,13 +513,16 @@ function Yatabar:OnEventFunc(frame, event, arg1, ...)
 	end
 	if event == "PLAYER_LOGIN" or event == "ADDON_LOADED" then
 		--print(event)	
-	elseif event == "PLAYER_REGEN_ENABLED" then
+	end
+	if event == "PLAYER_REGEN_ENABLED" then
 		--button:DisableDragNDrop(false)
 	
-	elseif event == "PLAYER_REGEN_DISABLED" then
+	end
+	if event == "PLAYER_REGEN_DISABLED" then
 		--button:DisableDragNDrop(true)
 	
-	elseif(event == "LEARNED_SPELL_IN_TAB") then
+	end
+	if(event == "LEARNED_SPELL_IN_TAB") then
 		print("Yatabar: ", L["new spell learned"])
 		self:GetTotemSpellsByElement()
 		--self:SetOrderTotemSpells()
@@ -517,7 +532,8 @@ function Yatabar:OnEventFunc(frame, event, arg1, ...)
 		self:SetLayout()
 		self:AddOptionsForTotems()
 	
-	elseif event == "MODIFIER_STATE_CHANGED" then
+	end
+	if event == "MODIFIER_STATE_CHANGED" then
 		if frame ~= nil and MouseIsOver(frame) then 
 			print(event,arg1, frame:GetAttribute("element"))
 		end
@@ -626,101 +642,7 @@ end
 
 
 
-function Yatabar:AddOptionsForTotems()
-	for element, order in pairs(self.orderElements) do
-		self.options.args.totems.args[element] = {
-			type = "group",
-			name = L[element],
-			args = {}
-		}
-		self.options.args.totems.args[element].args =  {
-			text = {
-				type = "description",
-				order = 1,
-				name = L["Set the order of the element"],
-				fontSize = "medium",
-			},
-			totem = {
-				name = L[element],
-				desc = element,
-				type = "range",
-				order = 2,
-				step = 1,
-				min = 1,
-				max = Yatabar.totemCount,
-				isPercent = false,
-				get = function() return self.orderElements[element]; end,
-				set = function(info,value) Yatabar:SetElementOrder(value, element); end
-			},
-			header = {
-				name = L["Totem configuration"],
-				type = "header", 
-				fontSize = "medium",
-				order = 3,
-			},
-			activateSpellOrder = {
-				name = L["Set Order"],
-				order = 4,
-				desc = L["Click to change order"],
-				type = "execute",
-				func = function(tbl,click) Yatabar:ActivateTotemOrder(element, tbl) end,
-			},
-			totemKeyBind = {
-				name = L["Set key binding"],
-				desc = L["Set the key binding desc"],
-				type = "keybinding",
-				get = function() return Yatabar.ElementBinding[element] end,
-				set = function(tbl, key) Yatabar:SetKeyBinding(element, key) end,
-			}
-		}
 
-		for idx, spell in pairs(self.availableTotems[element]) do
-			if idx ~= "count" then
-				buttonGrp = Yatabar:AddOptionsForTotem(idx, element, spell.id, spell.name)
-				if buttonGrp ~= nil then
-					table.insert(self.options.args.totems.args[element].args, buttonGrp)
-				end
-			end
-		end
-	end
-
-end
-
-function Yatabar:AddOptionsForTotem(idx, element, spellId, spellname)
-	local _, _, icon = GetSpellInfo(spellId)
-	if spellname ~= nil then
-		buttonGrp = {
-			type = "group",
-			inline = true,
-			name = spellname,
-			args = {
-				button = {
-					name = spellname,
-					order = 2,
-					image = icon,
-					type = "execute",
-					func = function(tbl,mousebutton) Yatabar:SetTotemOrder(tbl,mousebutton, element,spellId) end,
-				},
-				visible = {
-					name = L["show"],
-					order = 3,
-					type = "toggle",
-					tristate = true,
-					set = function(tbl,value) Yatabar:SetTotemVisibility(tbl,value, element, spellId, spellname) end,
-					get = function() if Yatabar.activateSpellOrder.active == true then return nil else return Yatabar:IsTotemVisible(element, spellId) end end,
-				},
-				text = {
-					type = "description",
-					order = 1,
-					name = function() return L["Position "]..Yatabar:GetTotemPosition(element, spellId) end ,
-				},
-			},
-		}
-				
-		return buttonGrp
-	end
-	return nil
-end
 
 function Yatabar:IsTotemVisible(element, spellId)
 	for idx, spell in pairs(self.orderTotemsInElement[element]) do
@@ -747,13 +669,14 @@ function Yatabar:SetTotemVisibility(tbl, value, element, spellId, spellname)
 	spllnm = spellname:gsub("%s+", "")
 	if value == true then
 		table.insert(self.orderTotemsInElement[element],{["id"] = spellId, ["name"] = spellname})
-			self:CreatePopupButton(Yatabar["TotemHeader"..element], #self.orderTotemsInElement[element], spellId, element, spllnm)
-		for k,v in pairs (tbl.options.args.totems.args[element].args) do
-			if v.name == spellname then
-				v.args.text.name = "Position "..#self.orderTotemsInElement[element]
-				break
-			end
-		end
+			self:CreatePopupButton(Yatabar["TotemHeader"..element], #self.orderTotemsInElement[element], spellId, element, spellname)
+			--self.acr:NotifyChange(Yatabar.name)
+		-- for k,v in pairs (tbl.options.args.totems.args[element].args) do
+		-- 	if v.name == spellname then
+		-- 		v.args.text.name = "Position "..#self.orderTotemsInElement[element]
+		-- 		break
+		-- 	end
+		-- end
 	else
 		--print("weg")
 		local isFirst = false
@@ -767,12 +690,14 @@ function Yatabar:SetTotemVisibility(tbl, value, element, spellId, spellname)
 		Yatabar["TotemHeader"..element]["popupButton"..element..spllnm]:Hide()
 		--Yatabar["TotemHeader"..element]["popupButton"..element..spllnm]:ClearStates()
 		Yatabar["TotemHeader"..element]["popupButton"..element..spllnm] = nil
-		for k,v in pairs (tbl.options.args.totems.args[element].args) do
-			if v.name == spellname then
-				v.args.text.name = "Position "..0
-				break
-			end
-		end
+
+		--self.acr:NotifyChange(Yatabar.name)
+		-- for k,v in pairs (tbl.options.args.totems.args[element].args) do
+		-- 	if v.name == spellname then
+		-- 		v.args.text.name = "Position "..0
+		-- 		break
+		-- 	end
+		-- end
 		if isFirst then
 			local spell = self.orderTotemsInElement[element][1]
 			Yatabar["TotemHeader"..element]["popupButton"..element..spell.name:gsub("%s+", "")]:Show()
@@ -1055,11 +980,11 @@ end
 function Yatabar:SavePosition()
 	local scale = Yatabar.bar:GetEffectiveScale();
 	local point, relativeTo, relativePoint, xOfs, yOfs =  Yatabar.bar:GetPoint()
-	self.db.char.xOfs = xOfs
-	--print(self.db.char.xOfs)
-	self.db.char.yOfs = yOfs
-	--print(self.db.char.yOfs)
-	self.db.char.scale = scale	
+	self.config.xOfs = xOfs
+	self.config.yOfs = yOfs
+	self.config.scale = scale	
+	self.config.point = point
+	self.config.relativePoint = relativePoint
 end
 
 function Yatabar:SetButtonSize(size)
@@ -1086,8 +1011,8 @@ end
 -- end
 
 function Yatabar:LoadPosition()
-	local scale = self.db.char.scale
-	local xOfs, yOfs = self.db.char.xOfs, self.db.char.yOfs
+	-- local scale = self.db.char.scale
+	-- local xOfs, yOfs = self.db.char.xOfs, self.db.char.yOfs
 	--print(xOfs, yOfs)
 	--Yatabar.bar:SetPoint("CENTER",UIParent, "CENTER", xOfs, yOfs);
 end

@@ -49,7 +49,7 @@ function Yatabar:InitOptions()
 				name = L["Lock the bar"],
 				desc = L["Lock/Unlock the bar"],
 				order =3,
-				get = function() return Yatabar.isLocked end,
+				get = function() if Yatabar.bar ~= nil then return not Yatabar.bar.overlay:IsVisible() else return true end end,
 				set = function(tbl,value) Yatabar:toggleLock() end,
 			},
 			keybind = {
@@ -93,7 +93,7 @@ function Yatabar:InitOptions()
 				desc = L["Select set desc"],
 				order = 9,
 				get    = function() return Yatabar.db:GetCurrentProfile() end,
-				set    = function(tbl, v) Yatabar:LoadProfile(v) end,
+				set    = function(tbl, v) Yatabar:LoadProfile(v, false) end,
 				validate = function() return not InCombatLockdown() or L["Profile cannot be changed in combat"] end,
 				disabled = InCombatLockdown,
 				values = function() return Yatabar:GetAllProfiles() end,
@@ -102,12 +102,13 @@ function Yatabar:InitOptions()
 				type = "input",
 				name = L["Create new set"],
 				get = false,
-				set = function(_, v) Yatabar.db:SetProfile(v) end,
+				set = function(_, v) Yatabar:LoadProfile(v, true) end,
 			}, 
 			deleteSet = {
 				type = "execute",
+				order = 10,
 				name = L["Delete set"],
-				func = function(arg1) print(arg1) end,
+				func = function(arg1) Yatabar:DeleteProfile(Yatabar.db:GetCurrentProfile()) end,
 			},
 			totems = {
 				type = "group",
@@ -120,6 +121,102 @@ function Yatabar:InitOptions()
 	}
 
 	return options;
+end
+
+function Yatabar:AddOptionsForTotems()
+	for element, order in pairs(self.orderElements) do
+		self.options.args.totems.args[element] = {
+			type = "group",
+			name = L[element],
+			args = {}
+		}
+		self.options.args.totems.args[element].args =  {
+			text = {
+				type = "description",
+				order = 1,
+				name = L["Set the order of the element"],
+				fontSize = "medium",
+			},
+			totem = {
+				name = L[element],
+				desc = element,
+				type = "range",
+				order = 2,
+				step = 1,
+				min = 1,
+				max = Yatabar.totemCount,
+				isPercent = false,
+				get = function() return self.orderElements[element]; end,
+				set = function(info,value) Yatabar:SetElementOrder(value, element); end
+			},
+			header = {
+				name = L["Totem configuration"],
+				type = "header", 
+				fontSize = "medium",
+				order = 3,
+			},
+			activateSpellOrder = {
+				name = L["Set Order"],
+				order = 4,
+				desc = L["Click to change order"],
+				type = "execute",
+				func = function(tbl,click) Yatabar:ActivateTotemOrder(element, tbl) end,
+			},
+			totemKeyBind = {
+				name = L["Set key binding"],
+				desc = L["Set the key binding desc"],
+				type = "keybinding",
+				get = function() return Yatabar.ElementBinding[element] end,
+				set = function(tbl, key) Yatabar:SetKeyBinding(element, key) end,
+			}
+		}
+
+		for idx, spell in pairs(self.availableTotems[element]) do
+			if idx ~= "count" then
+				buttonGrp = Yatabar:AddOptionsForTotem(idx, element, spell.id, spell.name)
+				if buttonGrp ~= nil then
+					table.insert(self.options.args.totems.args[element].args, buttonGrp)
+				end
+			end
+		end
+	end
+
+end
+
+function Yatabar:AddOptionsForTotem(idx, element, spellId, spellname)
+	local _, _, icon = GetSpellInfo(spellId)
+	if spellname ~= nil then
+		buttonGrp = {
+			type = "group",
+			inline = true,
+			name = spellname,
+			args = {
+				button = {
+					name = spellname,
+					order = 2,
+					image = icon,
+					type = "execute",
+					func = function(tbl,mousebutton) Yatabar:SetTotemOrder(tbl,mousebutton, element,spellId) end,
+				},
+				visible = {
+					name = L["show"],
+					order = 3,
+					type = "toggle",
+					tristate = true,
+					set = function(tbl,value) Yatabar:SetTotemVisibility(tbl,value, element, spellId, spellname) end,
+					get = function() if Yatabar.activateSpellOrder.active == true then return nil else return Yatabar:IsTotemVisible(element, spellId) end end,
+				},
+				text = {
+					type = "description",
+					order = 1,
+					name = function() return L["Position "]..Yatabar:GetTotemPosition(element, spellId) end ,
+				},
+			},
+		}
+				
+		return buttonGrp
+	end
+	return nil
 end
 
 -- function Yatabar:ShowSaveSetFrame()
@@ -155,7 +252,7 @@ function Yatabar:GetAllProfiles()
 	return profiles
 end
 
-function Yatabar:LoadProfile(profile)
+function Yatabar:LoadProfile(profile, newProfile)
 	for element, idx in pairs(Yatabar.orderElements) do
 		for idx, spell in pairs(self.availableTotems[element]) do
 			if type(spell) ~= "number" and type(spell.name) == "string" then
@@ -170,6 +267,29 @@ function Yatabar:LoadProfile(profile)
 	end
 	
 	Yatabar.db:SetProfile(profile)
+end
+
+function Yatabar:DeleteProfile(name)
+	local index = 1
+	local delete = false
+	local setToProfile = nil
+	--for dem Löschen muss zuerst ein anderes Profil ausgewählt werden
+	--prüfen ob das ausgewählte Profil nicht das zu löschende ist
+	for _, profileName in pairs(Yatabar:GetAllProfiles()) do
+		setToProfile = profileName 
+		if name ~= setToProfile then
+			delete = true
+			break
+		end
+	end
+	if delete then
+		--bevor es gelöscht werden kann, muss zuerst das neue gesetzt werden
+		Yatabar:LoadProfile(setToProfile)
+		Yatabar.db:DeleteProfile(name, true)
+		print("Yatabar: "..L["Delete profile - "]..name)
+	else
+		print("Yatabar: "..L["Cannot delete profile"])
+	end
 end
 
 -- function Yatabar:OnClickSave(arg1)

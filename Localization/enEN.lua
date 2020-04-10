@@ -41,6 +41,8 @@ if not L then return end
 	L["Create new set"] = "Create new set"
 	L["Delete set"] = "Delete set"
 	L["Profile cannot be changed in combat"] = "Profile cannot be changed in combat"
+	L["Cannot delete profile"] = "Cannot delete profile"
+	L["Delete profile - "] = "Delete profile - "
 
 	L["Hides the default mainbar"] = true 
 	L["Button Lock"] = true
