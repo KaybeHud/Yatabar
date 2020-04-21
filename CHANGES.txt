@@ -1,5 +1,7 @@
--fixed bar positioning
--fixed hide bar status in config
+- fixed bar positioning
+- fixed hide bar status in config
+- option to save totem sets
+- removed LibActionButton dependency
 
 ----------------------
 - added keybinding

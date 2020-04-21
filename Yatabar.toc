@@ -4,7 +4,7 @@
 ## Interface: 11304
 ## Notes: Shaman totem bar
 ## Notes-deDE: Totembar
-## Dependencies: LibActionButton-1.0, Ace3
+## Dependencies: Ace3
 ## OptionalDeps: Masque, LibDataBroker-1.1, LibDBIcon-1.0
 ## SavedVariables: YatabarDB
 ## Title: Yatabar

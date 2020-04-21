@@ -176,7 +176,7 @@ function Yatabar:OnEnable()
 end
 
 function Yatabar:OnNewProfile(db, profile)
-	print("new Profile")
+	--print("new Profile")
 	-- Yatabar:SetOrderTotemSpells()
 	-- for element, idx in pairs(Yatabar.orderElements) do
 	-- 	Yatabar:CreateTotemHeader(element)
