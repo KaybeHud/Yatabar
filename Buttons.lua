@@ -88,14 +88,9 @@ function Yatabar:CreatePopupButton(main,index, spellId, element, spellname)
 	
 end
 
-function Yatabar:ShowTooltip(button)
-	--if(Klappa2.config.bars[self.barid].tooltip) then
-		--GameTooltip:SetOwner(self.button);
-		
-		GameTooltip:SetOwner(UIParent, "ANCHOR_NONE"); 
+function Yatabar:ShowTooltip(button)	
+		GameTooltip_SetDefaultAnchor(GameTooltip, UIParent)
 		GameTooltip:SetSpellByID(button:GetAttribute("spellId"))
-		--GameTooltip:SetAction(self.button.id);
-	--end
 end
 
 function Yatabar:HideTooltip(button)

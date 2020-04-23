@@ -220,40 +220,7 @@ function Yatabar:RefreshConfig(arg1, db)
 	self:SetLayout()
 end
 
-local button = nil
-function Yatabar:TestButton()
-	local name = "Testbutton"
-	button = CreateFrame("CheckButton", name, UIParent, "SecureHandlerStateTemplate, SecureHandlerEnterLeaveTemplate, SecureActionButtonTemplate,ActionButtonTemplate")
-	button:SetPoint("CENTER",UIParent,"CENTER",-250,-250)
-	button:SetWidth(36);
-	button:SetHeight(36);
-	
-	button.icon = _G[name .. "Icon"];
-	button.icon:SetTexCoord(0.06, 0.94, 0.06, 0.94);
 
-	button.normalTexture = _G[name .. "NormalTexture"];
-	button.normalTexture:SetVertexColor(1, 1, 1, 0.5);
-
-	button.pushedTexture = button:GetPushedTexture();
-	button.highlightTexture = button:GetHighlightTexture();
-
-	button.cooldown = _G[name.."Cooldown"];
-	button.border = _G[name.."Border"];
-	button.macroName = _G[name.."Name"];
-	button.hotkey = _G[name.."HotKey"];
-	button.count = _G[name.."Count"];
-	button.flash = _G[name.."Flash"];
-	button.flash:Hide();
-
-	button:Show()
-	button:RegisterForClicks("LeftButtonUp")
-	button:SetScript("OnClick", function(...) Yatabar:TestEvent(...)end)
-end
-
-function Yatabar:TestEvent()
-	print("TestEvent")
-	Yatabar:EditMacro(true, nil,nil)
-end
 
 InterfaceOptionsFrame:HookScript("OnHide", function()
     print("Close Option")
@@ -669,14 +636,7 @@ function Yatabar:SetTotemVisibility(tbl, value, element, spellId, spellname)
 	spllnm = spellname:gsub("%s+", "")
 	if value == true then
 		table.insert(self.orderTotemsInElement[element],{["id"] = spellId, ["name"] = spellname})
-			self:CreatePopupButton(Yatabar["TotemHeader"..element], #self.orderTotemsInElement[element], spellId, element, spellname)
-			--self.acr:NotifyChange(Yatabar.name)
-		-- for k,v in pairs (tbl.options.args.totems.args[element].args) do
-		-- 	if v.name == spellname then
-		-- 		v.args.text.name = "Position "..#self.orderTotemsInElement[element]
-		-- 		break
-		-- 	end
-		-- end
+		self:CreatePopupButton(Yatabar["TotemHeader"..element], #self.orderTotemsInElement[element], spellId, element, spellname)
 	else
 		--print("weg")
 		local isFirst = false
@@ -691,13 +651,6 @@ function Yatabar:SetTotemVisibility(tbl, value, element, spellId, spellname)
 		--Yatabar["TotemHeader"..element]["popupButton"..element..spllnm]:ClearStates()
 		Yatabar["TotemHeader"..element]["popupButton"..element..spllnm] = nil
 
-		--self.acr:NotifyChange(Yatabar.name)
-		-- for k,v in pairs (tbl.options.args.totems.args[element].args) do
-		-- 	if v.name == spellname then
-		-- 		v.args.text.name = "Position "..0
-		-- 		break
-		-- 	end
-		-- end
 		if isFirst then
 			local spell = self.orderTotemsInElement[element][1]
 			Yatabar["TotemHeader"..element]["popupButton"..element..spell.name:gsub("%s+", "")]:Show()
@@ -765,7 +718,6 @@ function Yatabar:SetTotemOrder(tbl,mousebutton, element, spellId)
 	local currentPosition = 0
 	local newPosition = Yatabar.activateSpellOrder.order
 	--set position for next totem
-	Yatabar.activateSpellOrder.order = Yatabar.activateSpellOrder.order+1
 	Yatabar["TotemHeader"..element]:Execute([[
 			control:Run(show)
 			]])
@@ -786,6 +738,7 @@ function Yatabar:SetTotemOrder(tbl,mousebutton, element, spellId)
 	if newPosition == currentPosition then
 		return
 	end
+	Yatabar.activateSpellOrder.order = Yatabar.activateSpellOrder.order+1
 	--print("oldpostion", currentPosition)
 	local spellToSwitch = 0 
 	local findSpellToSwitch = false
@@ -1200,27 +1153,37 @@ function Yatabar:EditMacro(force, old,new)
 end
 
 
+local button = nil
+function Yatabar:TestButton()
+	local name = "Testbutton"
+	button = CreateFrame("CheckButton", name, UIParent, "SecureHandlerStateTemplate, SecureHandlerEnterLeaveTemplate, SecureActionButtonTemplate,ActionButtonTemplate")
+	button:SetPoint("CENTER",UIParent,"CENTER",-250,-250)
+	button:SetWidth(36);
+	button:SetHeight(36);
+	
+	button.icon = _G[name .. "Icon"];
+	button.icon:SetTexCoord(0.06, 0.94, 0.06, 0.94);
 
-function Yatabar:CreateActionPopupButton(main, spellCount, id)
-	--local id = main.id + spellCount--self.totemCount
-	--print("mainID:"..main.id)
-	--print("Popupid:"..id)
-	local name = "YatabarButton"..id
-	main["popupButton"..id] = LAB:CreateButton(id, name , main)
-	main["popupButton"..id].name = "popupButton"..id
-	print(id - spellCount) --self.totemCount)
-	main["popupButton"..id]:SetPoint("BOTTOMLEFT", main,"BOTTOMLEFT", 0,(id - spellCount - 1) * Yatabar.buttonSize) --(id - 1 - self.totemCount) * Yatabar.buttonSize
-	main["popupButton"..id]:SetAttribute('state', 1)
-	main["popupButton"..id]:SetAttribute('index', index)
-	main["popupButton"..id]:SetState(1, "action", id)
-	SecureHandlerWrapScript(main["popupButton"..id],"OnLeave",main,[[return true, ""]], [[
-		inHeader =  control:IsUnderMouse(true)
-		if not inHeader then
-			control:Run(close);
-		end	    
-	]])
+	button.normalTexture = _G[name .. "NormalTexture"];
+	button.normalTexture:SetVertexColor(1, 1, 1, 0.5);
 
-	SecureHandlerWrapScript(main["popupButton"..id],"OnEnter",main, [[
-		control:Run(show);
-		]]);
+	button.pushedTexture = button:GetPushedTexture();
+	button.highlightTexture = button:GetHighlightTexture();
+
+	button.cooldown = _G[name.."Cooldown"];
+	button.border = _G[name.."Border"];
+	button.macroName = _G[name.."Name"];
+	button.hotkey = _G[name.."HotKey"];
+	button.count = _G[name.."Count"];
+	button.flash = _G[name.."Flash"];
+	button.flash:Hide();
+
+	button:Show()
+	button:RegisterForClicks("LeftButtonUp")
+	button:SetScript("OnClick", function(...) Yatabar:TestEvent(...)end)
+end
+
+function Yatabar:TestEvent()
+	print("TestEvent")
+	Yatabar:EditMacro(true, nil,nil)
 end

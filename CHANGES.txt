@@ -1,3 +1,7 @@
+- fixed bug reorder totem 
+- fixed tooltip issue
+
+-----------------------
 - fixed bar positioning
 - fixed hide bar status in config
 - option to save totem sets
