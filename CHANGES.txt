@@ -1,3 +1,7 @@
+- fixed border is visible when resizing
+- fixed level up error
+- maybe fixed: do not load on login
+-----------------------
 - fixed bug reorder totem 
 - fixed tooltip issue
 

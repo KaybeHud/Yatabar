@@ -35,13 +35,16 @@ function Yatabar:CreatePopupButton(main,index, spellId, element, spellname)
 	main[name]:SetScript("OnLeave", function() self:HideTooltip(main[name]); end);
 	
 	_G[name.."Icon"]:SetTexture(icon)
-	main[name].cooldown = _G[name.."Cooldown"];
+	main[name].normalTexture = _G[name .. "NormalTexture"];
+	--main[name].normalTexture:SetVertexColor(1, 1, 1, 0.5);
+	main[name].normalTexture:Hide()
 	
-	main[name].cooldown:SetEdgeTexture("Interface\\Cooldown\\edge");
-	main[name].cooldown:SetSwipeColor(0, 0, 0);
-	main[name].cooldown:SetHideCountdownNumbers(false);
-	main[name].cooldown.currentCooldownType = COOLDOWN_TYPE_NORMAL;
-	main[name].cooldown:Show()
+	
+	--main[name].cooldown:SetEdgeTexture("Interface\\Cooldown\\edge");
+	-- main[name].cooldown:SetSwipeColor(0, 0, 0);
+	-- main[name].cooldown:SetHideCountdownNumbers(false);
+	-- main[name].cooldown.currentCooldownType = COOLDOWN_TYPE_NORMAL;
+	--main[name].cooldown:Show()
 	
 	
 	--print(main["popupButton"..element..spellname]:GetAction("spell1"))

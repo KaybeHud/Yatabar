@@ -170,6 +170,20 @@ function Yatabar:OnEnable()
 	self.optionsFrameGui = LibStub("AceConfigDialog-3.0"):Open(self.name)
 	Yatabar.minimapButton = Yatabar.icon:GetMinimapButton(Yatabar.name)
 	print(Yatabar.minimapButton:GetPoint())
+
+	self:GetTotemSpellsByElement()
+	self:SetOrderTotemSpells()
+	self:LoadKeyBinding()
+		
+
+	for element, spell in pairs(Yatabar.availableTotems) do
+		self:CreateTotemHeader(element)
+	end
+	self:SetLayout()
+	self:AddOptionsForTotems()
+	Yatabar:HidePopups()
+
+
 	--self:TestButton()
 	
 	--print("Enabled")
@@ -254,7 +268,7 @@ function Yatabar:CreateBar()
 	Yatabar.bar.overlay:RegisterForDrag("LeftButton")
 	Yatabar.bar.overlay:Hide()
 
-	Yatabar.bar:RegisterEvent("LEARNED_SPELL_IN_TAB")
+	--Yatabar.bar:RegisterEvent("LEARNED_SPELL_IN_TAB")
 	Yatabar.bar:RegisterEvent("PLAYER_REGEN_DISABLED")
 	Yatabar.bar:RegisterEvent("PLAYER_REGEN_ENABLED")
 	Yatabar.bar:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", "player");
@@ -443,8 +457,12 @@ function Yatabar:UpdateButtonLayout(frame, element,isVert,isRtorDn, idx, spellId
 		frame["popupButton"..element..spellname]:SetAttribute('index', idx)
 	end
 	frame["popupButton"..element..spellname]:SetSize(Yatabar.buttonSize,Yatabar.buttonSize)
+	--frame["popupButton"..element..spellname].normalTexture:SetSize(Yatabar.buttonSize,Yatabar.buttonSize)
+	
 	if MSQ then
-		myGroup:ReSkin()
+		if myGroup then
+			myGroup:ReSkin()
+		end
 	end
 end
 
@@ -455,19 +473,24 @@ function Yatabar:OnEventFunc(frame, event, arg1, ...)
 	end
 	if event == "SPELLS_CHANGED" then
 		--print(event)
+		if InCombatLockdown() then
+			return
+		end
 		Yatabar.spellLoaded = true
 		--if Yatabar.firstRun == false then
-		self:GetTotemSpellsByElement()
-		self:SetOrderTotemSpells()
-		self:LoadKeyBinding()
+
+		-- self:GetTotemSpellsByElement()
+		-- self:SetOrderTotemSpells()
+		-- self:LoadKeyBinding()
 		
-		--self:GetTotemSpells()
-		for element, spell in pairs(Yatabar.availableTotems) do
-			self:CreateTotemHeader(element)
-		end
-		self:SetLayout()
-		self:AddOptionsForTotems()
-		Yatabar:HidePopups()
+		-- --self:GetTotemSpells()
+		-- for element, spell in pairs(Yatabar.availableTotems) do
+		-- 	self:CreateTotemHeader(element)
+		-- end
+		-- self:SetLayout()
+		-- self:AddOptionsForTotems()
+		-- Yatabar:HidePopups()
+
 		--else
 		--	Yatabar.firstRun = false
 		--end
@@ -1166,6 +1189,7 @@ function Yatabar:TestButton()
 
 	button.normalTexture = _G[name .. "NormalTexture"];
 	button.normalTexture:SetVertexColor(1, 1, 1, 0.5);
+	--button.normalTexture:Hide()
 
 	button.pushedTexture = button:GetPushedTexture();
 	button.highlightTexture = button:GetHighlightTexture();
@@ -1177,6 +1201,7 @@ function Yatabar:TestButton()
 	button.count = _G[name.."Count"];
 	button.flash = _G[name.."Flash"];
 	button.flash:Hide();
+	button.border:Hide();
 
 	button:Show()
 	button:RegisterForClicks("LeftButtonUp")
@@ -1185,5 +1210,5 @@ end
 
 function Yatabar:TestEvent()
 	print("TestEvent")
-	Yatabar:EditMacro(true, nil,nil)
+	--Yatabar:EditMacro(true, nil,nil)
 end
