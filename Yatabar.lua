@@ -133,7 +133,7 @@ function Yatabar:OnInitialize()
 		myGroup = MSQ:Group(self.name,nil, true)
 	end
 	if Yatabar.icon then
-		Yatabar.icon:Register(Yatabar.name, ldb, not Yatabar.config.minimap)
+		Yatabar.icon:Register(Yatabar.name, ldb, Yatabar.config.minimap)
 		Yatabar.minimapButton = Yatabar.icon:GetMinimapButton(Yatabar.name)
 		print(Yatabar.minimapButton:GetPoint())
 	end
@@ -160,8 +160,8 @@ end
 
 function Yatabar:OnEnable()
 	self.totemCount = self:GetTotemCount()
-	--self:LoadPosition()
-	print(self.config.xOfs, self.config.yOfs)
+
+	--print(self.config.xOfs, self.config.yOfs)
 	self:CreateBar()
 	self:GetTotemSpellsByElement()
 	self.ac = LibStub("AceConfig-3.0"):RegisterOptionsTable(Yatabar.name, self.options)
@@ -169,7 +169,6 @@ function Yatabar:OnEnable()
 	self.optionsFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions(self.name, self.name)
 	self.optionsFrameGui = LibStub("AceConfigDialog-3.0"):Open(self.name)
 	Yatabar.minimapButton = Yatabar.icon:GetMinimapButton(Yatabar.name)
-	print(Yatabar.minimapButton:GetPoint())
 
 	self:GetTotemSpellsByElement()
 	self:SetOrderTotemSpells()
@@ -867,6 +866,7 @@ function Yatabar:HideMinimapIcon(value)
 	else
 		Yatabar.icon:Show(Yatabar.name)
 	end
+	--print(Yatabar.icon:GetPoint())
 end
 
 function Yatabar:SetPopupKey(key)
@@ -906,7 +906,9 @@ end
 function Yatabar:LoadKeyBinding()
 	for element, key  in pairs(Yatabar.ElementBinding) do
 		spellname = GetSpellInfo(Yatabar.orderTotemsInElement[element][1].name)
-		SetBindingSpell(key, spellname)
+		if spellname ~= nil then
+			SetBindingSpell(key, spellname)
+		end
 	end
 end
 
@@ -968,29 +970,6 @@ function Yatabar:SetButtonSize(size)
 	Yatabar.config.buttonSize = size 
 	Yatabar.scale = size /36
 	Yatabar:SetLayout()
-end
-
--- function Yatabar:isTotemFor(element)
--- 	infoType, spell = GetCursorInfo()
--- 	skillType, spellID = GetSpellBookItemInfo(spell, BOOKTYPE_SPELL)
--- 	if infoType == "spell" then 
--- 		if Yatabar:hasSpell(spellID) then
--- 			for index, spell in pairs(Yatabar.orderTotemsInElement[element]) do
--- 				if spell.id == spellID then
--- 					return true
--- 				end
--- 			end
--- 		end
--- 	end
--- 	return false
--- 	--self:SaveTotemSpellOrder(element)
--- end
-
-function Yatabar:LoadPosition()
-	-- local scale = self.db.char.scale
-	-- local xOfs, yOfs = self.db.char.xOfs, self.db.char.yOfs
-	--print(xOfs, yOfs)
-	--Yatabar.bar:SetPoint("CENTER",UIParent, "CENTER", xOfs, yOfs);
 end
 
 function Yatabar:ChatCommand(input)
