@@ -1,3 +1,5 @@
+- totem timer number is now on top of the button
+----------------------
 - fixed: minimap icon resets position
 - smaller bugfixes
 ----------------------

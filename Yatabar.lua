@@ -308,6 +308,7 @@ function Yatabar:CreateTotemHeader(element)
 
 	if Yatabar["TotemHeader"..element].statusbar == nil then
 		Yatabar["TotemHeader"..element].statusbar = self:GetStatusbar(Yatabar["TotemHeader"..element],element)
+		Yatabar["TotemHeader"..element].statusbar:SetFrameLevel(1000) 
 	end
 	if self.hideTimerBars == false then
 		Yatabar["TotemHeader"..element].statusbar:Show()
@@ -1040,6 +1041,7 @@ function Yatabar:GetStatusbar(parent, element)
 	statusbar:SetScript("OnUpdate", OnUpdate);
 	statusbar:SetMinMaxValues(0, 100);
 	statusbar:SetValue(0)
+	
 
 	statusbar.bg = statusbar:CreateTexture(nil, "BACKGROUND")
 	statusbar.bg:SetTexture("Interface\\TARGETINGFRAME\\UI-StatusBar")
