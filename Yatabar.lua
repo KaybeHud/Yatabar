@@ -47,8 +47,8 @@ Yatabar.ElementBinding = {
 
 local _G = getfenv(0)
 local L = LibStub("AceLocale-3.0"):GetLocale(Yatabar.name, true)
-local MSQ = LibStub("Masque", true)
-local myGroup = {}
+MSQ = LibStub("Masque", true)
+yatabarGroup = {}
 
 --LDB
 local ldb = LibStub:GetLibrary("LibDataBroker-1.1"):NewDataObject(Yatabar.name, {
@@ -130,7 +130,7 @@ function Yatabar:OnInitialize()
 	self:RegisterChatCommand("yatabar", "ChatCommand")
 
 	if MSQ then
-		myGroup = MSQ:Group(self.name,nil, true)
+		yatabarGroup = MSQ:Group(self.name,nil, true)
 	end
 	if Yatabar.icon then
 		Yatabar.icon:Register(Yatabar.name, ldb, Yatabar.config.minimap)
@@ -236,7 +236,7 @@ end
 
 
 InterfaceOptionsFrame:HookScript("OnHide", function()
-    print("Close Option")
+    --print("Close Option")
 end)
 
 
@@ -384,6 +384,11 @@ function Yatabar:SetLayout()
 	for element, spell in pairs(Yatabar.availableTotems) do
 		Yatabar:UpdateHeaderLayout(Yatabar["TotemHeader"..element], element,isVert, isRtorDn)
 	end
+	if MSQ then
+		if yatabarGroup then
+			yatabarGroup:ReSkin()
+		end
+	end
 end
 
 function Yatabar:UpdateHeaderLayout(frame, element,isVert,isRtorDn)
@@ -456,14 +461,11 @@ function Yatabar:UpdateButtonLayout(frame, element,isVert,isRtorDn, idx, spellId
 		frame["popupButton"..element..spellname].index = idx
 		frame["popupButton"..element..spellname]:SetAttribute('index', idx)
 	end
+	--frame["popupButton"..element..spellname]:SetScale(Yatabar.buttonSize/36)--SetSize(Yatabar.buttonSize,Yatabar.buttonSize)
 	frame["popupButton"..element..spellname]:SetSize(Yatabar.buttonSize,Yatabar.buttonSize)
-	--frame["popupButton"..element..spellname].normalTexture:SetSize(Yatabar.buttonSize,Yatabar.buttonSize)
+	--frame["popupButton"..element..spellname]:SetScale(1)--SetSize(Yatabar.buttonSize,Yatabar.buttonSize)
+	--frame["popupButton"..element..spellname].NormalTexture:SetScale(Yatabar.buttonSize/36)
 	
-	if MSQ then
-		if myGroup then
-			myGroup:ReSkin()
-		end
-	end
 end
 
 
@@ -668,6 +670,11 @@ function Yatabar:SetTotemVisibility(tbl, value, element, spellId, spellname)
 			isFirst = true
 		end
 		table.remove(self.orderTotemsInElement[element], Yatabar["TotemHeader"..element]["popupButton"..element..spllnm].index)
+		if MSQ then
+			if yatabarGroup then
+				yatabarGroup:RemoveButton(Yatabar["TotemHeader"..element]["popupButton"..element..spllnm])		
+			end
+		end
 		Yatabar["TotemHeader"..element]["popupButton"..element..spllnm].index = 0
 		Yatabar["TotemHeader"..element]["popupButton"..element..spllnm]:SetAttribute('index', 0)
 		Yatabar["TotemHeader"..element]["popupButton"..element..spllnm]:Hide()

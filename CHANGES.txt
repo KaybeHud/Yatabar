@@ -1,4 +1,6 @@
 - totem timer number is now on top of the button
+- fixed again border is visible when resizing after activating
+- fixed issues with Masque
 ----------------------
 - fixed: minimap icon resets position
 - smaller bugfixes

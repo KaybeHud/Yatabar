@@ -1,11 +1,11 @@
 if not (Yatabar) then return; end;
 
 --local LAB = LibStub("LibActionButton-1.0")
-MSQ = LibStub("Masque", true)
-myGroup = {}
-if MSQ then
-	myGroup = MSQ:Group(Yatabar.name,nil, true)
-end
+--MSQ = LibStub("Masque", true)
+--myGroup = {}
+-- if MSQ then
+-- 	myGroup = MSQ:Group(Yatabar.name,nil, true)
+-- end
 
 function Yatabar:CreatePopupButton(main,index, spellId, element, spellname)
 	--print("CreatePopups")
@@ -33,11 +33,16 @@ function Yatabar:CreatePopupButton(main,index, spellId, element, spellname)
 
 	main[name]:SetScript("OnEnter", function() self:ShowTooltip(main[name]); end);
 	main[name]:SetScript("OnLeave", function() self:HideTooltip(main[name]); end);
-	
-	_G[name.."Icon"]:SetTexture(icon)
-	main[name].normalTexture = _G[name .. "NormalTexture"];
+	main[name]:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", "player");
+	main[name]:SetScript("OnEvent", function(frame,event,...) self:OnButtonEvent(frame, event, main[name]); end);
+	main[name]:Show()
+	main[name].icon:SetTexture(icon)
+	main[name].icon:Show()
+	--_G[name.."Icon"]:SetTexture(icon)
+	--main[name].normalTexture = _G[name .. "NormalTexture"];
+	--main[name].normalTexture:SetAllPoints(main[name])
 	--main[name].normalTexture:SetVertexColor(1, 1, 1, 0.5);
-	main[name].normalTexture:Hide()
+	main[name]:SetNormalTexture("")
 	
 	
 	--main[name].cooldown:SetEdgeTexture("Interface\\Cooldown\\edge");
@@ -50,8 +55,8 @@ function Yatabar:CreatePopupButton(main,index, spellId, element, spellname)
 	--print(main["popupButton"..element..spellname]:GetAction("spell1"))
 	
 	if MSQ then
-		if myGroup then
-			myGroup:AddButton(main[name])		
+		if yatabarGroup then
+			yatabarGroup:AddButton(main[name])
 		end
 	end
 	
@@ -100,6 +105,14 @@ function Yatabar:HideTooltip(button)
 	--if GameTooltip:IsOwned(self.button) then
 		GameTooltip:Hide();
 	--end
+end
+
+function Yatabar:OnButtonEvent(self, event, button)
+	--print("OnEvent", event, self)
+	if ( event == "UNIT_SPELLCAST_SUCCEEDED" ) then
+		--print(button:GetAttribute("spell"))
+		--button.NormalTexture:Hide()
+	end
 end
 
 function Yatabar:UpdatePopupButton(button, index, spellId, element)
