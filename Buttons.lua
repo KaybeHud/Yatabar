@@ -99,6 +99,7 @@ end
 function Yatabar:ShowTooltip(button)	
 		GameTooltip_SetDefaultAnchor(GameTooltip, UIParent)
 		GameTooltip:SetSpellByID(button:GetAttribute("spellId"))
+		--print(button:GetAttribute("spellId"))
 end
 
 function Yatabar:HideTooltip(button)

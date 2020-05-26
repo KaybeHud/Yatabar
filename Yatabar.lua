@@ -163,18 +163,16 @@ function Yatabar:OnEnable()
 
 	--print(self.config.xOfs, self.config.yOfs)
 	self:CreateBar()
-	self:GetTotemSpellsByElement()
+	--self:GetTotemSpellsByElement()
 	self.ac = LibStub("AceConfig-3.0"):RegisterOptionsTable(Yatabar.name, self.options)
 	
 	self.optionsFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions(self.name, self.name)
 	self.optionsFrameGui = LibStub("AceConfigDialog-3.0"):Open(self.name)
 	Yatabar.minimapButton = Yatabar.icon:GetMinimapButton(Yatabar.name)
-
 	self:GetTotemSpellsByElement()
 	self:SetOrderTotemSpells()
 	self:LoadKeyBinding()
 		
-
 	for element, spell in pairs(Yatabar.availableTotems) do
 		self:CreateTotemHeader(element)
 	end
@@ -479,6 +477,14 @@ function Yatabar:OnEventFunc(frame, event, arg1, ...)
 			return
 		end
 		Yatabar.spellLoaded = true
+		self:GetTotemSpellsByElement()
+		self:SetOrderTotemSpells()
+		for element, spell in pairs(Yatabar.availableTotems) do
+			self:CreateTotemHeader(element)
+		end
+		self:SetLayout()
+		self:AddOptionsForTotems()
+		Yatabar:HidePopups()
 		--if Yatabar.firstRun == false then
 
 		-- self:GetTotemSpellsByElement()
@@ -574,18 +580,20 @@ function Yatabar:GetTotemSpellsByElement()
 			if Yatabar:hasSpell(spell["id"]) then
 				--print("---")
 				spellname, rank, icon, castTime, minRange, maxRange, spellId = GetSpellInfo(spell["id"])
-				--print(spellname,spell["id"], spellId)
+				--print(spellname,spell["id"], spellId, rank)
 				spellname, rank, icon, castTime, minRange, maxRange, spellId = GetSpellInfo(spellname) --spellId hat jetzt den höchsten Rang
-				--print(spellname, spellId)
+				--print(spellname, spellId, rank)
 				if spellname ~= nil then
 					table.insert(Yatabar.availableTotems[element],{["id"] = spellId, ["name"] = spellname, ["duration"] = spell["duration"]} )  
 					countSpells = countSpells + 1
 				end
 			end 
 		end
+		
 		Yatabar.availableTotems[element].count = countSpells - 1
 		countSpells = 1
 	end
+	--print("*------------*")
 end
 
 --Auflistung/Sortierung der Totems in Reihenfolge
@@ -610,6 +618,7 @@ function Yatabar:SetOrderTotemSpells()
 					for idx, spellOrdered in pairs(Yatabar.orderTotemsInElement[element]) do
 						if spellOrdered.name  == spell.name then	--update spell
 							Yatabar.orderTotemsInElement[element][idx].id = spell.id
+							--print("update spell", spell.id)
 							found = true
 							break
 						end
