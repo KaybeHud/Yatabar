@@ -1,5 +1,5 @@
 ----------------------
-- fixed: tooltip shows the rank 1 description of the totems
+- fixed: tooltip shows the rank 1 totem description
 ----------------------
 - totem timer number is now on top of the button
 - fixed again border is visible when resizing after activating
