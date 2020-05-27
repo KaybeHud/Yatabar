@@ -1,4 +1,7 @@
 ----------------------
+- update libdbicon link
+- update dependencies
+----------------------
 - added download links for external libs
 - update embeds file to load libs
 ----------------------
