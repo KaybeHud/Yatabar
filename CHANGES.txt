@@ -1,4 +1,7 @@
 ----------------------
+- added download links for external libs
+- update embeds file to load libs
+----------------------
 - fixed: tooltip shows the rank 1 totem description
 ----------------------
 - totem timer number is now on top of the button
