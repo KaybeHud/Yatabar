@@ -601,7 +601,7 @@ function Yatabar:SetOrderTotemSpells()
 	local firstFill = false
 
 	for element, spells in pairs(Yatabar.availableTotems) do
-		local count = 1
+		--local count = 1
 		if Yatabar.orderTotemsInElement[element][1] == nil then
 			firstFill = true
 		end
@@ -614,12 +614,12 @@ function Yatabar:SetOrderTotemSpells()
 		else 
 			for k, spell in pairs(spells) do
 				if k ~= "count" then 
-					local found = false
+					--local found = false
 					for idx, spellOrdered in pairs(Yatabar.orderTotemsInElement[element]) do
 						if spellOrdered.name  == spell.name then	--update spell
 							Yatabar.orderTotemsInElement[element][idx].id = spell.id
 							--print("update spell", spell.id)
-							found = true
+							--found = true
 							break
 						end
 					end
@@ -922,9 +922,11 @@ end
 
 function Yatabar:LoadKeyBinding()
 	for element, key  in pairs(Yatabar.ElementBinding) do
-		spellname = GetSpellInfo(Yatabar.orderTotemsInElement[element][1].name)
-		if spellname ~= nil then
-			SetBindingSpell(key, spellname)
+		if Yatabar.orderTotemsInElement[element][1] ~= nil then
+			spellname = GetSpellInfo(Yatabar.orderTotemsInElement[element][1].name)
+			if spellname ~= nil then
+				SetBindingSpell(key, spellname)
+			end
 		end
 	end
 end

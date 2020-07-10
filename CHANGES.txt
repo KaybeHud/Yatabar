@@ -1,3 +1,7 @@
+---------------------
+- update supported WoW version
+----------------------
+- bugfix when loading spellbind for low level with no totems
 ----------------------
 - update libdbicon link
 - update dependencies
