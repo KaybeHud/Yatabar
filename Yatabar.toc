@@ -1,7 +1,7 @@
 ## Author: kaybe
 ## DefaultState: enabled
 ## LoadOnDemand: 0
-## Interface: 11306
+## Interface: 11307
 ## Notes: Shaman totem bar
 ## Notes-deDE: Totemleiste
 ## OptionalDeps: Masque
