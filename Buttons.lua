@@ -19,6 +19,7 @@ function Yatabar:CreatePopupButton(main,index, spellId, element, spellname)
 		main[name] = CreateFrame("CheckButton", name, main, "SecureHandlerStateTemplate, SecureHandlerEnterLeaveTemplate, SecureActionButtonTemplate,ActionButtonTemplate") --LAB:CreateButton(name, name , main)
 	main[name].name = name
 	end
+	--print(name..spellId)
 	main[name]:ClearAllPoints()
 	main[name].spellId = spellId
 	main[name].index = index

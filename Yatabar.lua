@@ -158,9 +158,25 @@ function Yatabar:SetConfigVars()
 	-- print(self.db.char.yOfs)
 end
 
+--With TBC some Totem names have changed
+--you have to update the saved names to the new ones
+function Yatabar:RefreshTotemNames()
+	for eleName, element in pairs(self.orderTotemsInElement) do 
+		for totemIndex, totem in pairs (element) do
+			spellname, rank, icon, castTime, minRange, maxRange, spellId = GetSpellInfo(totem.id)
+			--welche Totems sind dem Spieler bekannt:
+			spellname, rank, icon, castTime, minRange, maxRange, spellId = GetSpellInfo(spellname)
+			if spellname ~= totem.name then
+				print("Yatabar: Totem name migration - old name: ".. totem.name.." - new name: "..spellname)
+				self.orderTotemsInElement[eleName][totemIndex].name = spellname
+			end
+		end
+	end
+end
+
 function Yatabar:OnEnable()
 	self.totemCount = self:GetTotemCount()
-
+	self:RefreshTotemNames()
 	--print(self.config.xOfs, self.config.yOfs)
 	self:CreateBar()
 	--self:GetTotemSpellsByElement()
@@ -203,6 +219,7 @@ function Yatabar:RefreshConfig(arg1, db)
 	self.config = self.db.profile
 	self.orderElements = self.config.orderElements
 	self.orderTotemsInElement = self.config.orderTotemsInElement
+	self:RefreshTotemNames()
 	self.buttonSize = self.config.buttonSize
 	self.popupKey = self.config.popupKey
 	self.hideTimerBars = self.config.hideTimerBars
@@ -249,7 +266,7 @@ function Yatabar:CreateBar()
 	Yatabar.bar:SetMovable(true);
 	Yatabar.bar:SetClampedToScreen(true);
 	
-	Yatabar.bar.overlay = CreateFrame("Frame", "YatabarBarOverlay", Yatabar.bar)
+	Yatabar.bar.overlay = CreateFrame("Frame", "YatabarBarOverlay", Yatabar.bar, BackdropTemplateMixin and "BackdropTemplate")
 	Yatabar.bar.overlay:SetAllPoints()
 	Yatabar.bar.overlay:SetBackdrop({
 		bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
@@ -441,7 +458,14 @@ function Yatabar:UpdateButtonLayout(frame, element,isVert,isRtorDn, idx, spellId
 	end
 	spellname = GetSpellInfo(spellId)
 	spellname = spellname:gsub("%s+", "")
-	frame["popupButton"..element..spellname]:ClearAllPoints()
+	if frame["popupButton"..element..spellname] ~= nil then
+		frame["popupButton"..element..spellname]:ClearAllPoints()
+	
+	else 
+		print("popupButton"..element..spellname..spellId)
+		return
+	end
+	
 	if (isVert and isRtorDn) then
 		frame["popupButton"..element..spellname]:SetPoint("TOPLEFT", frame,"TOPLEFT",(idx - 1) * Yatabar.buttonSize, 0)
 		frame["popupButton"..element..spellname].index = idx
@@ -616,8 +640,17 @@ function Yatabar:SetOrderTotemSpells()
 				if k ~= "count" then 
 					--local found = false
 					for idx, spellOrdered in pairs(Yatabar.orderTotemsInElement[element]) do
+						-- Migration for TBC
+							-- in DE hat sich der Name geändert
+							-- if spellOrdered.id == 10587 then
+							-- 	print(spellOrdered.name.."::"..Yatabar.orderTotemsInElement[element][idx].id)
+							-- 	print("Name geändert von "..Yatabar.orderTotemsInElement[element][idx].name.." zu "..spell.name)
+							-- 	Yatabar.orderTotemsInElement[element][idx].name = spell.name
+								
+							-- end
 						if spellOrdered.name  == spell.name then	--update spell
 							Yatabar.orderTotemsInElement[element][idx].id = spell.id
+							
 							--print("update spell", spell.id)
 							--found = true
 							break

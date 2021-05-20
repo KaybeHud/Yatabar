@@ -1,3 +1,4 @@
 ---------------------
-- latest version for WoW classic (era)
+- Update for TBC
+- fixed bug with new totem names
 ----------------------
