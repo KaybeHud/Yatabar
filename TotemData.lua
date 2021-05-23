@@ -37,3 +37,6 @@ YatabarConfig.totems = {
             { id = 25908, duration = 120 }, -- tranquil air
         }
 }
+YatabarConfig.spells = {
+    TotemicCall = 36936
+}

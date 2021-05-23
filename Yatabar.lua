@@ -491,7 +491,7 @@ function Yatabar:UpdateButtonLayout(frame, element,isVert,isRtorDn, idx, spellId
 end
 
 
-function Yatabar:OnEventFunc(frame, event, arg1, ...)
+function Yatabar:OnEventFunc(frame, event, arg1,...)
 	if event == "PLAYER_ENTERING_WORLD"  or event == "PLAYER_ALIVE" or event == "PLAYER_LEVEL_UP"   then
 		--print(event)
 	end
@@ -560,26 +560,17 @@ function Yatabar:OnEventFunc(frame, event, arg1, ...)
 			print(event,arg1, frame:GetAttribute("element"))
 		end
 	end
+	
 	if event == "UNIT_SPELLCAST_SUCCEEDED" then
-		--print(arg1)
+		spellUIID, spellId = ...
 		if arg1 == "player" then
 			Yatabar:StartTimer(self, ...);
 		end
-	elseif event == "PLAYER_DEAD" then
-		for element, spell in pairs(Yatabar.activeTotemTimer) do
-			button = _G["popupButton"..element..spell.name:gsub("%s+", "")];
-			if button ~= nil then
-				button:SetChecked(false);
-			end
-			if Yatabar.activeTotemStartTime[element] ~= nil then
-				Yatabar.activeTotemStartTime[element] = nil;
-				countdown = Yatabar["TotemHeader"..element].statusbar;
-				if countdown then
-					countdown:SetValue(0);
-					countdown.value:SetText("")
-				end
-			end
+		if spellId == YatabarConfig.spells.TotemicCall then
+			Yatabar:StopTimer()
 		end
+	elseif event == "PLAYER_DEAD" then
+		Yatabar:StopTimer()
 	end	
 end
 
@@ -1078,6 +1069,24 @@ function Yatabar:StartTimer(self, guid, spellId)
 		OnUpdate()
 	end
 end
+
+function Yatabar:StopTimer()
+	for element, spell in pairs(Yatabar.activeTotemTimer) do
+		button = _G["popupButton"..element..spell.name:gsub("%s+", "")];
+		if button ~= nil then
+			button:SetChecked(false);
+		end
+		if Yatabar.activeTotemStartTime[element] ~= nil then
+			Yatabar.activeTotemStartTime[element] = nil;
+			countdown = Yatabar["TotemHeader"..element].statusbar;
+			if countdown then
+				countdown:SetValue(0);
+				countdown.value:SetText("")
+			end
+		end
+	end
+end
+
 
 function Yatabar:GetStatusbar(parent, element)
 	local statusbar = CreateFrame("StatusBar", "Statusbar"..element, Yatabar.bar)
