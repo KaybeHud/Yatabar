@@ -1,4 +1,4 @@
 ---------------------
-- Update for TBC
-- fixed bug with new totem names
+- fixed issue with Totemic Call
+- add option for debug output
 ----------------------

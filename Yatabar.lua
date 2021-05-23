@@ -257,7 +257,9 @@ end)
 
 -- the main frame for the bar
 function Yatabar:CreateBar()
-	--print("CreateBar") 
+	if Yatabar.config.debugOn then
+		print("CreateBar") 
+	end
 	Yatabar.bar = CreateFrame("Frame", "YatabarBar", UIParent)
 	Yatabar.bar:SetPoint(self.config.point,UIParent,self.config.relativePoint, self.config.xOfs, self.config.yOfs)
 	Yatabar.bar.name = "Yatabar.bar"
@@ -295,7 +297,9 @@ function Yatabar:CreateBar()
 end
 
 function Yatabar:CreateTotemHeader(element)
-	--print("CreateTotemHeader")
+	if Yatabar.config.debugOn then
+		print("Yatabar: CreateTotemHeader: "..element)
+	end
 	local frameBorder = Yatabar.frameBorder 
 	if Yatabar["TotemHeader"..element] == nil then
 		Yatabar["TotemHeader"..element] = CreateFrame("Frame", "TotemHeader"..element, Yatabar.bar, "SecureHandlerStateTemplate")
@@ -589,6 +593,9 @@ function Yatabar:hasSpell(spellId)
 end
 
 function Yatabar:GetTotemSpellsByElement()
+	if Yatabar.config.debugOn then
+		print("Yatabar: GetTotemSpellsByElement")
+	end
 	countSpells = 1
 	for element, totem in pairs(YatabarConfig.totems) do
 		Yatabar.availableTotems[element] = {}
@@ -620,6 +627,10 @@ end
 
 --Auflistung/Sortierung der Totems in Reihenfolge
 function Yatabar:SetOrderTotemSpells()
+	if Yatabar.config.debugOn then
+		print("Yatabar: SetOrderTotemSpells: ")
+	end
+
 	local firstFill = false
 
 	for element, spells in pairs(Yatabar.availableTotems) do
