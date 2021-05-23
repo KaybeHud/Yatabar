@@ -99,7 +99,8 @@ local defaults =
 		activeSet = {},
 		sets = {},
 		point = "CENTER",
-		relativePoint = "CENTER"
+		relativePoint = "CENTER",
+		debugOn = false
 
 	}
 }
@@ -254,7 +255,7 @@ InterfaceOptionsFrame:HookScript("OnHide", function()
     --print("Close Option")
 end)
 
-
+-- the main frame for the bar
 function Yatabar:CreateBar()
 	--print("CreateBar") 
 	Yatabar.bar = CreateFrame("Frame", "YatabarBar", UIParent)
@@ -602,7 +603,13 @@ function Yatabar:GetTotemSpellsByElement()
 					table.insert(Yatabar.availableTotems[element],{["id"] = spellId, ["name"] = spellname, ["duration"] = spell["duration"]} )  
 					countSpells = countSpells + 1
 				end
-			end 
+			else
+				--debug
+				if Yatabar.config.debugOn then
+					print("Yatabar - Spell not found:")
+					print(GetSpellInfo(spell["id"]))
+				end
+			end
 		end
 		
 		Yatabar.availableTotems[element].count = countSpells - 1
@@ -631,18 +638,11 @@ function Yatabar:SetOrderTotemSpells()
 				if k ~= "count" then 
 					--local found = false
 					for idx, spellOrdered in pairs(Yatabar.orderTotemsInElement[element]) do
-						-- Migration for TBC
-							-- in DE hat sich der Name geändert
-							-- if spellOrdered.id == 10587 then
-							-- 	print(spellOrdered.name.."::"..Yatabar.orderTotemsInElement[element][idx].id)
-							-- 	print("Name geändert von "..Yatabar.orderTotemsInElement[element][idx].name.." zu "..spell.name)
-							-- 	Yatabar.orderTotemsInElement[element][idx].name = spell.name
-								
-							-- end
 						if spellOrdered.name  == spell.name then	--update spell
 							Yatabar.orderTotemsInElement[element][idx].id = spell.id
-							
-							--print("update spell", spell.id)
+							if Yatabar.config.debugOn then
+								print("Yatabar: update spell", spell.id)
+							end
 							--found = true
 							break
 						end
@@ -863,6 +863,10 @@ function Yatabar:GetTotemCount()
 			count = count + 1
 		end
 	end
+		--debug
+		if Yatabar.config.debugOn then
+			print("Yatabar -  Totems found: "..count)
+		end
 	return count
 end
 

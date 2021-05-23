@@ -85,13 +85,21 @@ function Yatabar:InitOptions()
 			segment = {
 				type = "header",
 				name = "",
-				order = 8,
+				order = 9,
+			},
+			debugOn = {
+				type = "toggle",
+				name = "Debug output",
+				order = 8,	
+				desc = L["Actvate debug output"],
+				get = function() return Yatabar.config.debugOn end,
+				set = function(frame, value) Yatabar.config.debugOn = value end,
 			},
 			sets = {
 				type = "select",
 				name = L["Select set"],
 				desc = L["Select set desc"],
-				order = 9,
+				order = 10,
 				get    = function() return Yatabar.db:GetCurrentProfile() end,
 				set    = function(tbl, v) Yatabar:LoadProfile(v, false) end,
 				validate = function() return not InCombatLockdown() or L["Profile cannot be changed in combat"] end,
@@ -106,7 +114,7 @@ function Yatabar:InitOptions()
 			}, 
 			deleteSet = {
 				type = "execute",
-				order = 10,
+				order = 11,
 				name = L["Delete set"],
 				func = function(arg1) Yatabar:DeleteProfile(Yatabar.db:GetCurrentProfile()) end,
 			},
