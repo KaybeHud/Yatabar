@@ -122,7 +122,9 @@ function Yatabar:OnInitialize()
 	
 	self:SetConfigVars()
 	self.options = self:InitOptions()
-
+	if Yatabar.config.debugOn then
+		Yatabar:CreateDebugWindow()
+	end
 	
 	-- self.optionsFrame:HookScript("OnHide", function()
 	-- 	print("Close Option2")
@@ -191,6 +193,9 @@ function Yatabar:OnEnable()
 	self:LoadKeyBinding()
 		
 	for element, spell in pairs(Yatabar.availableTotems) do
+		if Yatabar.config.debugOn then
+			Yatabar:AddDebugText("Yatabar: create header for: "..element)
+		end
 		self:CreateTotemHeader(element)
 	end
 	self:SetLayout()
@@ -258,7 +263,7 @@ end)
 -- the main frame for the bar
 function Yatabar:CreateBar()
 	if Yatabar.config.debugOn then
-		print("CreateBar") 
+		Yatabar:AddDebugText("Yatabar: CreateBar") 
 	end
 	Yatabar.bar = CreateFrame("Frame", "YatabarBar", UIParent)
 	Yatabar.bar:SetPoint(self.config.point,UIParent,self.config.relativePoint, self.config.xOfs, self.config.yOfs)
@@ -298,7 +303,7 @@ end
 
 function Yatabar:CreateTotemHeader(element)
 	if Yatabar.config.debugOn then
-		print("Yatabar: CreateTotemHeader: "..element)
+		Yatabar:AddDebugText("Yatabar: CreateTotemHeader: "..element)
 	end
 	local frameBorder = Yatabar.frameBorder 
 	if Yatabar["TotemHeader"..element] == nil then
@@ -467,7 +472,9 @@ function Yatabar:UpdateButtonLayout(frame, element,isVert,isRtorDn, idx, spellId
 		frame["popupButton"..element..spellname]:ClearAllPoints()
 	
 	else 
-		print("popupButton"..element..spellname..spellId)
+		if Yatabar.config.debugOn then
+			Yatabar:AddDebugText("Yatabar: popupButton"..element..spellname..spellId)
+		end
 		return
 	end
 	
@@ -594,10 +601,13 @@ end
 
 function Yatabar:GetTotemSpellsByElement()
 	if Yatabar.config.debugOn then
-		print("Yatabar: GetTotemSpellsByElement")
+		Yatabar:AddDebugText("Yatabar: GetTotemSpellsByElement:")
 	end
 	countSpells = 1
 	for element, totem in pairs(YatabarConfig.totems) do
+		if Yatabar.config.debugOn then
+			Yatabar:AddDebugText("GetTotemSpellsByElement: Element:"..element)
+		end
 		Yatabar.availableTotems[element] = {}
 		for idx, spell in pairs(totem) do
 			if Yatabar:hasSpell(spell["id"]) then
@@ -609,17 +619,25 @@ function Yatabar:GetTotemSpellsByElement()
 				if spellname ~= nil then
 					table.insert(Yatabar.availableTotems[element],{["id"] = spellId, ["name"] = spellname, ["duration"] = spell["duration"]} )  
 					countSpells = countSpells + 1
+				else
+					if Yatabar.config.debugOn then
+						print("GetTotemSpellsByElement: Spellname not found:")
+						print(GetSpellInfo(spell["id"]))
+					end
 				end
 			else
 				--debug
 				if Yatabar.config.debugOn then
-					print("Yatabar - Spell not found:")
-					print(GetSpellInfo(spell["id"]))
+					Yatabar:AddDebugText("GetTotemSpellsByElement: Spell not found:")
+					Yatabar:AddDebugText(GetSpellInfo(spell["id"]))
 				end
 			end
 		end
 		
 		Yatabar.availableTotems[element].count = countSpells - 1
+		if Yatabar.config.debugOn then
+			Yatabar:AddDebugText("GetTotemSpellsByElement: count spells for element: "..element.."::"..countSpells)
+		end
 		countSpells = 1
 	end
 	--print("*------------*")
@@ -628,7 +646,7 @@ end
 --Auflistung/Sortierung der Totems in Reihenfolge
 function Yatabar:SetOrderTotemSpells()
 	if Yatabar.config.debugOn then
-		print("Yatabar: SetOrderTotemSpells: ")
+		Yatabar:AddDebugText("Yatabar: SetOrderTotemSpells: ")
 	end
 
 	local firstFill = false
@@ -652,10 +670,18 @@ function Yatabar:SetOrderTotemSpells()
 						if spellOrdered.name  == spell.name then	--update spell
 							Yatabar.orderTotemsInElement[element][idx].id = spell.id
 							if Yatabar.config.debugOn then
-								print("Yatabar: update spell", spell.id)
+								Yatabar:AddDebugText("SetOrderTotemSpells: update spell ".. spell.id.."::"..spell.name)
 							end
 							--found = true
 							break
+						else
+							if Yatabar.config.debugOn then
+								local txt1 = ""
+								local txt2 = ""
+								if spellOrdered.name ~= nil then txt1 = spellOrdered.name  end
+								if spell.name ~= nil then txt2 = spell.name end
+								Yatabar:AddDebugText("SetOrderTotemSpells: checked "..txt1.."::"..txt2)
+							end
 						end
 					end
 					-- if found ~= true and firstFill == true then   --add new  spell
@@ -876,7 +902,7 @@ function Yatabar:GetTotemCount()
 	end
 		--debug
 		if Yatabar.config.debugOn then
-			print("Yatabar -  Totems found: "..count)
+			Yatabar:AddDebugText("Yatabar -  Totems found: "..count)
 		end
 	return count
 end

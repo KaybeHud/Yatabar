@@ -2,6 +2,7 @@ if not (Yatabar) then return; end;
 local L = LibStub("AceLocale-3.0"):GetLocale(Yatabar.name, true)
 local AceGUI = LibStub("AceGUI-3.0")
 local newSetName = ""
+local _G = _G;
 
 function Yatabar:InitOptions()
 	local options = {
@@ -85,7 +86,7 @@ function Yatabar:InitOptions()
 			segment = {
 				type = "header",
 				name = "",
-				order = 9,
+				order = 10,
 			},
 			debugOn = {
 				type = "toggle",
@@ -95,11 +96,17 @@ function Yatabar:InitOptions()
 				get = function() return Yatabar.config.debugOn end,
 				set = function(frame, value) Yatabar.config.debugOn = value end,
 			},
+			showDebugMsg = {
+				type = "execute",
+				order = 9,
+				name = "Show debug messages",
+				func = Yatabar.ShowWindow,
+			},
 			sets = {
 				type = "select",
 				name = L["Select set"],
 				desc = L["Select set desc"],
-				order = 10,
+				order = 11,
 				get    = function() return Yatabar.db:GetCurrentProfile() end,
 				set    = function(tbl, v) Yatabar:LoadProfile(v, false) end,
 				validate = function() return not InCombatLockdown() or L["Profile cannot be changed in combat"] end,
@@ -114,7 +121,7 @@ function Yatabar:InitOptions()
 			}, 
 			deleteSet = {
 				type = "execute",
-				order = 11,
+				order = 12,
 				name = L["Delete set"],
 				func = function(arg1) Yatabar:DeleteProfile(Yatabar.db:GetCurrentProfile()) end,
 			},
@@ -174,6 +181,7 @@ function Yatabar:AddOptionsForTotems()
 				name = L["Set key binding"],
 				desc = L["Set the key binding desc"],
 				type = "keybinding",
+				order = 5,
 				get = function() return Yatabar.ElementBinding[element] end,
 				set = function(tbl, key) Yatabar:SetKeyBinding(element, key) end,
 			}

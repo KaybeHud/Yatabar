@@ -35,7 +35,9 @@ function Yatabar:CreatePopupButton(main,index, spellId, element, spellname)
 	main[name]:SetScript("OnEnter", function() self:ShowTooltip(main[name]); end);
 	main[name]:SetScript("OnLeave", function() self:HideTooltip(main[name]); end);
 	main[name]:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", "player");
+	main[name]:RegisterForClicks("AnyUp")
 	main[name]:SetScript("OnEvent", function(frame,event,...) self:OnButtonEvent(frame, event, main[name]); end);
+	main[name]:SetScript("PostClick", Yatabar.ButtonClicked)
 	main[name]:Show()
 	main[name].icon:SetTexture(icon)
 	main[name].icon:Show()
@@ -114,6 +116,7 @@ function Yatabar:OnButtonEvent(self, event, button)
 	if ( event == "UNIT_SPELLCAST_SUCCEEDED" ) then
 		--print(button:GetAttribute("spell"))
 		--button.NormalTexture:Hide()
+		
 	end
 end
 
@@ -133,4 +136,33 @@ function Yatabar:UpdatePopupButton(button, index, spellId, element)
 	button:SetState("spell1", "spell", spellId)
 	--print(button:GetAction("spell1"))
 	--button:ButtonContentsChanged("spell1", "spell", spellId)
+end
+
+function Yatabar:ButtonClicked(arg1, arg2, arg3)
+	if arg1 == "RightButton" then 
+	if self.index ~= 1 then
+		--print(arg1, self.element, self.index)
+		local index = self.index
+		local spellToSwitch = Yatabar.orderTotemsInElement[self.element][1]
+		
+		Yatabar.orderTotemsInElement[self.element][1] = Yatabar.orderTotemsInElement[self.element][index] 
+		Yatabar.orderTotemsInElement[self.element][index] = spellToSwitch
+	
+	-- Set keybinding if first totem changed and create new macro
+		local key = Yatabar.ElementBinding[self.element]
+		Yatabar:SetKeyBinding(self.element, key) 
+		Yatabar:EditMacro(true, nil,nil)
+	end
+
+	--Set position text in Config Dialog
+	-- for k,v in pairs (tbl.options.args.totems.args[element].args) do
+	-- 	if v.name == tbl.option.name then
+	-- 		v.args.text.name = L["Position "]..newPosition
+	-- 	elseif v.name == spellnameToSwitch then
+	-- 		v.args.text.name = L["Position "]..currentPosition
+	-- 	end
+	-- end
+
+	Yatabar:SetLayout()
+	end
 end

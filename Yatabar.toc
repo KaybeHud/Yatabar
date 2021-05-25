@@ -15,5 +15,7 @@ Localization\deDE.lua
 TotemData.lua
 Yatabar.lua
 Config.lua
+debugWindow.lua
 Buttons.lua
+
 
