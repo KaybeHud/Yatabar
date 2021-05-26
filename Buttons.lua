@@ -14,6 +14,10 @@ function Yatabar:CreatePopupButton(main,index, spellId, element, spellname)
 	--end
 	
 	--print("Spellid", spellname, spellId)
+	if Yatabar.config.debugOn then
+		Yatabar:AddDebugText("CreatePopupButton: "..element.."::"..spellname) 
+	end
+
 	local name = "popupButton"..element..spellname:gsub("%s+", "")
 	if main[name] == nil then
 		main[name] = CreateFrame("CheckButton", name, main, "SecureHandlerStateTemplate, SecureHandlerEnterLeaveTemplate, SecureActionButtonTemplate,ActionButtonTemplate") --LAB:CreateButton(name, name , main)
@@ -138,31 +142,32 @@ function Yatabar:UpdatePopupButton(button, index, spellId, element)
 	--button:ButtonContentsChanged("spell1", "spell", spellId)
 end
 
-function Yatabar:ButtonClicked(arg1, arg2, arg3)
-	if arg1 == "RightButton" then 
-	if self.index ~= 1 then
-		--print(arg1, self.element, self.index)
-		local index = self.index
-		local spellToSwitch = Yatabar.orderTotemsInElement[self.element][1]
+function Yatabar:ButtonClicked(arg1)
+	if arg1 == "RightButton" and not InCombatLockdown() then 
+		if self.index ~= 1 then
+			--print(arg1, self.element, self.index)
+			local index = self.index
+			local spellToSwitch = Yatabar.orderTotemsInElement[self.element][1]
+			
+			Yatabar.orderTotemsInElement[self.element][1] = Yatabar.orderTotemsInElement[self.element][index] 
+			Yatabar.orderTotemsInElement[self.element][index] = spellToSwitch
 		
-		Yatabar.orderTotemsInElement[self.element][1] = Yatabar.orderTotemsInElement[self.element][index] 
-		Yatabar.orderTotemsInElement[self.element][index] = spellToSwitch
-	
-	-- Set keybinding if first totem changed and create new macro
-		local key = Yatabar.ElementBinding[self.element]
-		Yatabar:SetKeyBinding(self.element, key) 
-		Yatabar:EditMacro(true, nil,nil)
-	end
+		-- Set keybinding if first totem changed and create new macro
+			local key = Yatabar.ElementBinding[self.element]
+			Yatabar:SetKeyBinding(self.element, key) 
+			Yatabar:EditMacro(true, nil,nil)
+		end
+		self:SetChecked(false)
 
-	--Set position text in Config Dialog
-	-- for k,v in pairs (tbl.options.args.totems.args[element].args) do
-	-- 	if v.name == tbl.option.name then
-	-- 		v.args.text.name = L["Position "]..newPosition
-	-- 	elseif v.name == spellnameToSwitch then
-	-- 		v.args.text.name = L["Position "]..currentPosition
-	-- 	end
-	-- end
+		--Set position text in Config Dialog
+		-- for k,v in pairs (tbl.options.args.totems.args[element].args) do
+		-- 	if v.name == tbl.option.name then
+		-- 		v.args.text.name = L["Position "]..newPosition
+		-- 	elseif v.name == spellnameToSwitch then
+		-- 		v.args.text.name = L["Position "]..currentPosition
+		-- 	end
+		-- end
 
-	Yatabar:SetLayout()
+		Yatabar:SetLayout()
 	end
 end

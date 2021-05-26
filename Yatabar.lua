@@ -170,7 +170,11 @@ function Yatabar:RefreshTotemNames()
 			--welche Totems sind dem Spieler bekannt:
 			spellname, rank, icon, castTime, minRange, maxRange, spellId = GetSpellInfo(spellname)
 			if spellname ~= totem.name then
-				print("Yatabar: Totem name migration - old name: ".. totem.name.." - new name: "..spellname)
+				if element == nil then
+					if Yatabar.config.debugOn then
+						Yatabar:AddDebugText("Yatabar: Totem name migration - old name: ".. totem.name.." - new name: "..spellname)
+					end
+				end
 				self.orderTotemsInElement[eleName][totemIndex].name = spellname
 			end
 		end
@@ -680,7 +684,7 @@ function Yatabar:SetOrderTotemSpells()
 								local txt2 = ""
 								if spellOrdered.name ~= nil then txt1 = spellOrdered.name  end
 								if spell.name ~= nil then txt2 = spell.name end
-								Yatabar:AddDebugText("SetOrderTotemSpells: checked "..txt1.."::"..txt2)
+								--Yatabar:AddDebugText("SetOrderTotemSpells: checked "..txt1.."::"..txt2)
 							end
 						end
 					end
@@ -729,6 +733,25 @@ function Yatabar:SetTotemVisibility(tbl, value, element, spellId, spellname)
 	--print(spellId)
 	--local spellname = GetSpellInfo(spellId)
 	spllnm = spellname:gsub("%s+", "")
+	if element == nil then
+		if Yatabar.config.debugOn then
+			Yatabar:AddDebugText("Yatabar: SetTotemVisibility: element is missing")
+		end
+		return
+	end
+	if spellId == nil then
+		if Yatabar.config.debugOn then
+			Yatabar:AddDebugText("Yatabar: SetTotemVisibility: spellId is missing")
+		end
+		return
+	end
+	if spellname == nil then
+		if Yatabar.config.debugOn then
+			Yatabar:AddDebugText("Yatabar: SetTotemVisibility: spellname is missing")
+		end
+		return
+	end
+
 	if value == true then
 		table.insert(self.orderTotemsInElement[element],{["id"] = spellId, ["name"] = spellname})
 		self:CreatePopupButton(Yatabar["TotemHeader"..element], #self.orderTotemsInElement[element], spellId, element, spellname)
@@ -889,20 +912,31 @@ end
 
 function Yatabar:GetTotemCount()
 	count = 0
-	for elem, id in pairs(TotemItems) do 
-		if (elem) then
-			local totemItem = GetItemCount(id)
-			haveTotem = (totemItem and totemItem > 0) and true or false
-		end
-		--haveTotem, totemName = GetTotemInfo(i)
-		if haveTotem then
-			--print(totemName)
-			count = count + 1
-		end
-	end
+	-- for elem, id in pairs(TotemItems) do 
+	-- 	if (elem) then
+	-- 		local totemItem = GetItemCount(id)
+	-- 		haveTotem = (totemItem and totemItem > 0) and true or false
+	-- 	else
+
+	-- 	end
+	-- 	--haveTotem, totemName = GetTotemInfo(i)
+	-- 	if haveTotem then
+	-- 		--print(totemName)
+	-- 		count = count + 1
+	-- 	end
+	-- end
 		--debug
+
+		for elem, id in pairs(TotemItems) do 
+			
+			if Yatabar.config.debugOn then
+				Yatabar:AddDebugText("GetTotemCount -  look for: "..elem.."::"..id)
+				Yatabar:AddDebugText("GetTotemCount -  result: "..GetItemCount(id))
+			end
+			count = count + GetItemCount(id)
+		end
 		if Yatabar.config.debugOn then
-			Yatabar:AddDebugText("Yatabar -  Totems found: "..count)
+			Yatabar:AddDebugText("GetTotemCount -  Totems found: "..count)
 		end
 	return count
 end
