@@ -28,6 +28,12 @@ Yatabar.name = "Yatabar"
 Yatabar.frameBorder = 12
 Yatabar.statusbarGap = 2
 Yatabar.availableTotems = {}
+Yatabar.totemsFound = {
+	["AIR"] = false,
+	["FIRE"] = false,
+	["WATER"] = false,
+	["EARTH"] = false,
+}
 Yatabar.popupKey = "nokey"
 Yatabar.isLocked = true
 Yatabar.activateSpellOrder = {active = false, element = "", order = 1}
@@ -309,6 +315,13 @@ function Yatabar:CreateTotemHeader(element)
 	if Yatabar.config.debugOn then
 		Yatabar:AddDebugText("Yatabar: CreateTotemHeader: "..element)
 	end
+
+	if Yatabar.availableTotems[element].count <1 then
+		if Yatabar.config.debugOn then
+			Yatabar:AddDebugText("CreateTotemHeader: no spells found, skip "..element)
+		end
+		return
+	end
 	local frameBorder = Yatabar.frameBorder 
 	if Yatabar["TotemHeader"..element] == nil then
 		Yatabar["TotemHeader"..element] = CreateFrame("Frame", "TotemHeader"..element, Yatabar.bar, "SecureHandlerStateTemplate")
@@ -411,7 +424,9 @@ function Yatabar:SetLayout()
 	end
 
 	for element, spell in pairs(Yatabar.availableTotems) do
-		Yatabar:UpdateHeaderLayout(Yatabar["TotemHeader"..element], element,isVert, isRtorDn)
+		if Yatabar["TotemHeader"..element] ~= nil then
+			Yatabar:UpdateHeaderLayout(Yatabar["TotemHeader"..element], element,isVert, isRtorDn)
+		end
 	end
 	if MSQ then
 		if yatabarGroup then
@@ -604,13 +619,20 @@ function Yatabar:hasSpell(spellId)
 end
 
 function Yatabar:GetTotemSpellsByElement()
+	local totemcount = 0
 	if Yatabar.config.debugOn then
 		Yatabar:AddDebugText("Yatabar: GetTotemSpellsByElement:")
 	end
-	countSpells = 1
+	countSpells = 0
 	for element, totem in pairs(YatabarConfig.totems) do
 		if Yatabar.config.debugOn then
 			Yatabar:AddDebugText("GetTotemSpellsByElement: Element:"..element)
+		end
+		if Yatabar.totemsFound[element] == false then
+			if Yatabar.config.debugOn then
+				Yatabar:AddDebugText("GetTotemSpellsByElement: skip element:"..element)
+			end
+			break
 		end
 		Yatabar.availableTotems[element] = {}
 		for idx, spell in pairs(totem) do
@@ -625,26 +647,23 @@ function Yatabar:GetTotemSpellsByElement()
 					countSpells = countSpells + 1
 				else
 					if Yatabar.config.debugOn then
-						print("GetTotemSpellsByElement: Spellname not found:")
-						print(GetSpellInfo(spell["id"]))
+						Yatabar:AddDebugText("GetTotemSpellsByElement: Spellname not found: "..GetSpellInfo(spell["id"]))
 					end
 				end
 			else
 				--debug
 				if Yatabar.config.debugOn then
-					Yatabar:AddDebugText("GetTotemSpellsByElement: Spell not found:")
-					Yatabar:AddDebugText(GetSpellInfo(spell["id"]))
+					Yatabar:AddDebugText("GetTotemSpellsByElement: Spell not found: "..GetSpellInfo(spell["id"]))
 				end
 			end
 		end
 		
-		Yatabar.availableTotems[element].count = countSpells - 1
+		Yatabar.availableTotems[element].count = countSpells 
 		if Yatabar.config.debugOn then
-			Yatabar:AddDebugText("GetTotemSpellsByElement: count spells for element: "..element.."::"..countSpells)
+			Yatabar:AddDebugText("GetTotemSpellsByElement: count spells for element: "..element.."::"..Yatabar.availableTotems[element].count)
 		end
-		countSpells = 1
+		countSpells = 0
 	end
-	--print("*------------*")
 end
 
 --Auflistung/Sortierung der Totems in Reihenfolge
@@ -927,14 +946,65 @@ function Yatabar:GetTotemCount()
 	-- end
 		--debug
 
-		for elem, id in pairs(TotemItems) do 
-			
+		if GetItemCount(TotemItems[WATER_TOTEM_SLOT]) > 0 then
+			Yatabar.totemsFound["WATER"] = true
+			count = count + 1
 			if Yatabar.config.debugOn then
-				Yatabar:AddDebugText("GetTotemCount -  look for: "..elem.."::"..id)
-				Yatabar:AddDebugText("GetTotemCount -  result: "..GetItemCount(id))
+				Yatabar:AddDebugText("GetTotemCount -  WATER totem found, count: "..count)
 			end
-			count = count + GetItemCount(id)
+		else
+			Yatabar.totemsFound["WATER"] = false
+			if Yatabar.config.debugOn then
+				Yatabar:AddDebugText("GetTotemCount -  WATER totem not found, count: "..count)
+			end
 		end
+		if GetItemCount(TotemItems[EARTH_TOTEM_SLOT]) > 0 then
+			Yatabar.totemsFound["EARTH"] = true
+			count = count + 1
+			if Yatabar.config.debugOn then
+				Yatabar:AddDebugText("GetTotemCount -  EARTH totem found, count: "..count)
+			end
+		else
+			Yatabar.totemsFound["EARTH"] = false
+			if Yatabar.config.debugOn then
+				Yatabar:AddDebugText("GetTotemCount -  EARTH totem not found, count: "..count)
+			end
+		end
+		if GetItemCount(TotemItems[AIR_TOTEM_SLOT]) > 0 then
+			Yatabar.totemsFound["AIR"] = true
+			count = count + 1
+			if Yatabar.config.debugOn then
+				Yatabar:AddDebugText("GetTotemCount -  AIR totem found, count: "..count)
+			end
+		else
+			Yatabar.totemsFound["AIR"] = false
+			if Yatabar.config.debugOn then
+				Yatabar:AddDebugText("GetTotemCount -  AIR totem not found, count: "..count)
+			end
+		end
+		if GetItemCount(TotemItems[FIRE_TOTEM_SLOT]) > 0 then
+			Yatabar.totemsFound["FIRE"] = true
+			count = count + 1
+			if Yatabar.config.debugOn then
+				Yatabar:AddDebugText("GetTotemCount -  FIRE totem found, count: "..count)
+			end
+		else
+			Yatabar.totemsFound["FIRE"] = false
+			if Yatabar.config.debugOn then
+				Yatabar:AddDebugText("GetTotemCount -  FIRE totem not found, count: "..count)
+			end
+		end
+
+
+		-- for elem, id in pairs(TotemItems) do 
+			
+		-- 	if Yatabar.config.debugOn then
+		-- 		Yatabar:AddDebugText("GetTotemCount -  look for: "..elem.."::"..id)
+		-- 		Yatabar:AddDebugText("GetTotemCount -  result: "..GetItemCount(id))
+		-- 	end
+		-- 	count = count + GetItemCount(id)
+		-- 	print(#elem)
+		-- end
 		if Yatabar.config.debugOn then
 			Yatabar:AddDebugText("GetTotemCount -  Totems found: "..count)
 		end
