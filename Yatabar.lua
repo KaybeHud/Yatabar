@@ -632,6 +632,7 @@ function Yatabar:GetTotemSpellsByElement()
 			if Yatabar.config.debugOn then
 				Yatabar:AddDebugText("GetTotemSpellsByElement: skip element:"..element)
 			end
+			print("GetTotemSpellsByElement: skip element:"..element)
 			break
 		end
 		Yatabar.availableTotems[element] = {}
@@ -952,11 +953,13 @@ function Yatabar:GetTotemCount()
 			if Yatabar.config.debugOn then
 				Yatabar:AddDebugText("GetTotemCount -  WATER totem found, count: "..count)
 			end
+			print("GetTotemCount -  WATER totem found, count: "..count)
 		else
 			Yatabar.totemsFound["WATER"] = false
 			if Yatabar.config.debugOn then
 				Yatabar:AddDebugText("GetTotemCount -  WATER totem not found, count: "..count)
 			end
+			print("GetTotemCount -  WATER totem not found, count: "..count)
 		end
 		if GetItemCount(TotemItems[EARTH_TOTEM_SLOT]) > 0 then
 			Yatabar.totemsFound["EARTH"] = true
@@ -964,11 +967,13 @@ function Yatabar:GetTotemCount()
 			if Yatabar.config.debugOn then
 				Yatabar:AddDebugText("GetTotemCount -  EARTH totem found, count: "..count)
 			end
+			print("GetTotemCount -  EARTH totem found, count: "..count)
 		else
 			Yatabar.totemsFound["EARTH"] = false
 			if Yatabar.config.debugOn then
 				Yatabar:AddDebugText("GetTotemCount -  EARTH totem not found, count: "..count)
 			end
+			print(("GetTotemCount -  EARTH totem not found, count: "..count))
 		end
 		if GetItemCount(TotemItems[AIR_TOTEM_SLOT]) > 0 then
 			Yatabar.totemsFound["AIR"] = true
@@ -976,11 +981,13 @@ function Yatabar:GetTotemCount()
 			if Yatabar.config.debugOn then
 				Yatabar:AddDebugText("GetTotemCount -  AIR totem found, count: "..count)
 			end
+			print("GetTotemCount -  AIR totem found, count: "..count)
 		else
 			Yatabar.totemsFound["AIR"] = false
 			if Yatabar.config.debugOn then
 				Yatabar:AddDebugText("GetTotemCount -  AIR totem not found, count: "..count)
 			end
+			print("GetTotemCount -  AIR totem not found, count: "..count)
 		end
 		if GetItemCount(TotemItems[FIRE_TOTEM_SLOT]) > 0 then
 			Yatabar.totemsFound["FIRE"] = true
@@ -988,11 +995,13 @@ function Yatabar:GetTotemCount()
 			if Yatabar.config.debugOn then
 				Yatabar:AddDebugText("GetTotemCount -  FIRE totem found, count: "..count)
 			end
+			print("GetTotemCount -  FIRE totem found, count: "..count)
 		else
 			Yatabar.totemsFound["FIRE"] = false
 			if Yatabar.config.debugOn then
 				Yatabar:AddDebugText("GetTotemCount -  FIRE totem not found, count: "..count)
 			end
+			print("GetTotemCount -  FIRE totem not found, count: "..count)
 		end
 
 
