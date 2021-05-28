@@ -632,36 +632,36 @@ function Yatabar:GetTotemSpellsByElement()
 			if Yatabar.config.debugOn then
 				Yatabar:AddDebugText("GetTotemSpellsByElement: skip element:"..element)
 			end
-			print("GetTotemSpellsByElement: skip element:"..element)
-			break
-		end
-		Yatabar.availableTotems[element] = {}
-		for idx, spell in pairs(totem) do
-			if Yatabar:hasSpell(spell["id"]) then
-				--print("---")
-				spellname, rank, icon, castTime, minRange, maxRange, spellId = GetSpellInfo(spell["id"])
-				--print(spellname,spell["id"], spellId, rank)
-				spellname, rank, icon, castTime, minRange, maxRange, spellId = GetSpellInfo(spellname) --spellId hat jetzt den höchsten Rang
-				--print(spellname, spellId, rank)
-				if spellname ~= nil then
-					table.insert(Yatabar.availableTotems[element],{["id"] = spellId, ["name"] = spellname, ["duration"] = spell["duration"]} )  
-					countSpells = countSpells + 1
+			print("GetTotemSpellsByElement: skip element:"..element)	
+		else
+			Yatabar.availableTotems[element] = {}
+			for idx, spell in pairs(totem) do
+				if Yatabar:hasSpell(spell["id"]) then
+					--print("---")
+					spellname, rank, icon, castTime, minRange, maxRange, spellId = GetSpellInfo(spell["id"])
+					--print(spellname,spell["id"], spellId, rank)
+					spellname, rank, icon, castTime, minRange, maxRange, spellId = GetSpellInfo(spellname) --spellId hat jetzt den höchsten Rang
+					--print(spellname, spellId, rank)
+					if spellname ~= nil then
+						table.insert(Yatabar.availableTotems[element],{["id"] = spellId, ["name"] = spellname, ["duration"] = spell["duration"]} )  
+						countSpells = countSpells + 1
+					else
+						if Yatabar.config.debugOn then
+							Yatabar:AddDebugText("GetTotemSpellsByElement: Spellname not found: "..GetSpellInfo(spell["id"]))
+						end
+					end
 				else
+					--debug
 					if Yatabar.config.debugOn then
-						Yatabar:AddDebugText("GetTotemSpellsByElement: Spellname not found: "..GetSpellInfo(spell["id"]))
+						Yatabar:AddDebugText("GetTotemSpellsByElement: Spell not found: "..GetSpellInfo(spell["id"]))
 					end
 				end
-			else
-				--debug
-				if Yatabar.config.debugOn then
-					Yatabar:AddDebugText("GetTotemSpellsByElement: Spell not found: "..GetSpellInfo(spell["id"]))
-				end
 			end
-		end
-		
-		Yatabar.availableTotems[element].count = countSpells 
-		if Yatabar.config.debugOn then
-			Yatabar:AddDebugText("GetTotemSpellsByElement: count spells for element: "..element.."::"..Yatabar.availableTotems[element].count)
+			
+			Yatabar.availableTotems[element].count = countSpells 
+			if Yatabar.config.debugOn then
+				Yatabar:AddDebugText("GetTotemSpellsByElement: count spells for element: "..element.."::"..Yatabar.availableTotems[element].count)
+			end
 		end
 		countSpells = 0
 	end
