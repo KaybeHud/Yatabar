@@ -633,7 +633,6 @@ function Yatabar:GetTotemSpellsByElement()
 				Yatabar:AddDebugText("GetTotemSpellsByElement: skip element:"..element)
 			end
 			print("GetTotemSpellsByElement: skip element:"..element)
-			break
 		end
 		Yatabar.availableTotems[element] = {}
 		for idx, spell in pairs(totem) do
