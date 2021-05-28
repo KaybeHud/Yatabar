@@ -686,6 +686,7 @@ function Yatabar:SetOrderTotemSpells()
 					table.insert(Yatabar.orderTotemsInElement[element],spell)
 				end
 			end
+			firstFill = false
 		else 
 			for k, spell in pairs(spells) do
 				if k ~= "count" then 
@@ -1128,9 +1129,11 @@ end
 
 function Yatabar:HidePopups()
 	for element, idx in pairs(Yatabar.orderElements) do
-		Yatabar["TotemHeader"..element]:Execute([[
+		if Yatabar["TotemHeader"..element] ~= nil then
+			Yatabar["TotemHeader"..element]:Execute([[
 			control:Run(close)
 			]])
+		end
 	end
 end
 
