@@ -38,9 +38,11 @@ function Yatabar:CreatePopupButton(main,index, spellId, element, spellname)
 
 	main[name]:SetScript("OnEnter", function() self:ShowTooltip(main[name]); end);
 	main[name]:SetScript("OnLeave", function() self:HideTooltip(main[name]); end);
-	main[name]:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", "player");
+	--main[name]:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", "player");
+	main[name]:RegisterEvent("UNIT_POWER_UPDATE")
 	main[name]:RegisterForClicks("AnyUp")
-	main[name]:SetScript("OnEvent", function(frame,event,...) self:OnButtonEvent(frame, event, main[name]); end);
+	main[name]:SetScript("OnEvent", function(frame,event,...) self:OnButtonEvent(frame, event, main[name], ...); end);
+	--main[name]:SetScript("OnEvent", Yatabar.OnButtonEvent);
 	main[name]:SetScript("PostClick", Yatabar.ButtonClicked)
 	main[name]:Show()
 	main[name].icon:SetTexture(icon)
@@ -115,13 +117,24 @@ function Yatabar:HideTooltip(button)
 	--end
 end
 
-function Yatabar:OnButtonEvent(self, event, button)
+function Yatabar:OnButtonEvent(self, event, button,...)
 	--print("OnEvent", event, self)
 	if ( event == "UNIT_SPELLCAST_SUCCEEDED" ) then
 		--print(button:GetAttribute("spell"))
 		--button.NormalTexture:Hide()
 		
 	end
+	if(event == "UNIT_POWER_UPDATE") then
+		usable, noMana = IsUsableSpell(button.spellId)
+		if (not usable) then
+			if (noMana) then
+				button.icon:SetVertexColor(0.5, 0.5, 1.0);
+			end
+		else
+			button.icon:SetVertexColor(1.0, 1.0, 1.0);
+		end
+	end
+	
 end
 
 function Yatabar:UpdatePopupButton(button, index, spellId, element)
