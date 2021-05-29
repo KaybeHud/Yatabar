@@ -1,4 +1,4 @@
 ---------------------
-- added in options window for detailed debug messages
-- change first totem button with right click on popouts
+- fixed missing water totem
+- added indication if there is not enough mana for the totem
 ----------------------
