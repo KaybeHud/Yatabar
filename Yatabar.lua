@@ -316,9 +316,9 @@ function Yatabar:CreateTotemHeader(element)
 		Yatabar:AddDebugText("Yatabar: CreateTotemHeader: "..element)
 	end
 
-	if Yatabar.availableTotems[element].count <1 then
+	if Yatabar.availableTotems[element] == nil or Yatabar.availableTotems[element].count <1 then
 		if Yatabar.config.debugOn then
-			Yatabar:AddDebugText("CreateTotemHeader: no spells found, skip "..element)
+			Yatabar:AddDebugText("CreateTotemHeader: no element or spells found, skip "..element)
 		end
 		return
 	end
@@ -1339,7 +1339,7 @@ end
 function Yatabar:GetTotemSet()
 	local set = {}
 	for element, spells in pairs(Yatabar.orderTotemsInElement) do
-		if Yatabar.orderTotemsInElement[element][1] ~= nil then
+		if Yatabar.orderTotemsInElement[element] ~= nil and Yatabar.orderTotemsInElement[element][1] ~= nil then
 			table.insert(set, Yatabar.orderTotemsInElement[element][1].name)
 		end
 		--print("TotemSet:",element, Yatabar.orderTotemsInElement[element][1].name)
