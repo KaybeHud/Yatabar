@@ -186,12 +186,13 @@ function Yatabar:AddOptionsForTotems()
 				set = function(tbl, key) Yatabar:SetKeyBinding(element, key) end,
 			}
 		}
-
-		for idx, spell in pairs(self.availableTotems[element]) do
-			if idx ~= "count" then
-				buttonGrp = Yatabar:AddOptionsForTotem(idx, element, spell.id, spell.name)
-				if buttonGrp ~= nil then
-					table.insert(self.options.args.totems.args[element].args, buttonGrp)
+		if self.availableTotems[element] ~= nil then
+			for idx, spell in pairs(self.availableTotems[element]) do
+				if idx ~= "count" then
+					buttonGrp = Yatabar:AddOptionsForTotem(idx, element, spell.id, spell.name)
+					if buttonGrp ~= nil then
+						table.insert(self.options.args.totems.args[element].args, buttonGrp)
+					end
 				end
 			end
 		end
