@@ -246,20 +246,22 @@ function Yatabar:RefreshConfig(arg1, db)
 	Yatabar:SetOrderTotemSpells()
 	for element, idx in pairs(Yatabar.orderElements) do
 		Yatabar:CreateTotemHeader(element)
-		Yatabar["TotemHeader"..element]:Execute([[control:Run(show)]])
-		Yatabar["TotemHeader"..element]:Execute([[control:Run(close)]])
-		-- for k,v in pairs (self.options.args.totems.args[element].args) do
-		-- 	if type(k) == "number" then
-		-- 		for order, spell in pairs(self.orderTotemsInElement[element]) do
-		-- 			if v.name == spell.name then	
-		-- 				v.args.text.name = L["Position "]..order
-		-- 				break;
-		-- 			else
-		-- 				v.args.text.name = L["Position "]..0
-		-- 			end	
-		-- 		end
-		-- 	end
-		-- end
+		if Yatabar["TotemHeader"..element] ~= nil then
+			Yatabar["TotemHeader"..element]:Execute([[control:Run(show)]])
+			Yatabar["TotemHeader"..element]:Execute([[control:Run(close)]])
+			-- for k,v in pairs (self.options.args.totems.args[element].args) do
+			-- 	if type(k) == "number" then
+			-- 		for order, spell in pairs(self.orderTotemsInElement[element]) do
+			-- 			if v.name == spell.name then	
+			-- 				v.args.text.name = L["Position "]..order
+			-- 				break;
+			-- 			else
+			-- 				v.args.text.name = L["Position "]..0
+			-- 			end	
+			-- 		end
+			-- 	end
+			-- end
+		end
 	end
 	self:SetLayout()
 end
