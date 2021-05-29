@@ -182,5 +182,6 @@ function Yatabar:ButtonClicked(arg1)
 		-- end
 
 		Yatabar:SetLayout()
+		Yatabar:HidePopups()
 	end
 end

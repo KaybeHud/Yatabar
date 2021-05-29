@@ -1337,7 +1337,9 @@ end
 function Yatabar:GetTotemSet()
 	local set = {}
 	for element, spells in pairs(Yatabar.orderTotemsInElement) do
-		table.insert(set, Yatabar.orderTotemsInElement[element][1].name)
+		if Yatabar.orderTotemsInElement[element][1] ~= nil then
+			table.insert(set, Yatabar.orderTotemsInElement[element][1].name)
+		end
 		--print("TotemSet:",element, Yatabar.orderTotemsInElement[element][1].name)
 	end
 	return set
