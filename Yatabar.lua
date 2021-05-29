@@ -797,7 +797,9 @@ function Yatabar:SetTotemVisibility(tbl, value, element, spellId, spellname)
 
 		if isFirst then
 			local spell = self.orderTotemsInElement[element][1]
-			Yatabar["TotemHeader"..element]["popupButton"..element..spell.name:gsub("%s+", "")]:Show()
+			if Yatabar["TotemHeader"..element]["popupButton"..element..spell.name:gsub("%s+", "")] ~= nil then
+				Yatabar["TotemHeader"..element]["popupButton"..element..spell.name:gsub("%s+", "")]:Show()
+			end
 		end
 	end
 

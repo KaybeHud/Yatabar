@@ -271,12 +271,14 @@ end
 
 function Yatabar:LoadProfile(profile, newProfile)
 	for element, idx in pairs(Yatabar.orderElements) do
-		for idx, spell in pairs(self.availableTotems[element]) do
-			if type(spell) ~= "number" and type(spell.name) == "string" then
-				if Yatabar["TotemHeader"..element]["popupButton"..element..spell.name:gsub("%s+", "")] ~= nil then
-					--print(spell.name:gsub("%s+", ""), "vorhanden")
-					Yatabar["TotemHeader"..element]["popupButton"..element..spell.name:gsub("%s+", "")]:SetAttribute('index', 0)
-					Yatabar["TotemHeader"..element]["popupButton"..element..spell.name:gsub("%s+", "")]:Hide()
+		if self.availableTotems[element] ~= nil then
+			for idx, spell in pairs(self.availableTotems[element]) do
+				if type(spell) ~= "number" and type(spell.name) == "string" then
+					if Yatabar["TotemHeader"..element]["popupButton"..element..spell.name:gsub("%s+", "")] ~= nil then
+						--print(spell.name:gsub("%s+", ""), "vorhanden")
+						Yatabar["TotemHeader"..element]["popupButton"..element..spell.name:gsub("%s+", "")]:SetAttribute('index', 0)
+						Yatabar["TotemHeader"..element]["popupButton"..element..spell.name:gsub("%s+", "")]:Hide()
+					end
 				end
 			end
 		end
