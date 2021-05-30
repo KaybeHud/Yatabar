@@ -1,4 +1,6 @@
 ---------------------
+- added Totem of Wrath
+---------------------
 - fixed missing water totem
 - added indication if there is not enough mana for the totem
 ----------------------

@@ -18,6 +18,7 @@ YatabarConfig.totems = {
             { id = 8181, duration = 120 }, -- frost resistance
             { id = 8190, duration = 20 }, -- magma
             { id = 8227, duration = 120 }, -- flametongue
+            { id = 30706, duration = 120}, --Totem of Wrath
         },
         ["WATER"] = {
             { id = 5394, duration = 60 }, -- healing stream
