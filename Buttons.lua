@@ -1,4 +1,5 @@
 if not (Yatabar) then return; end;
+local L = LibStub("AceLocale-3.0"):GetLocale(Yatabar.name, true)
 
 --local LAB = LibStub("LibActionButton-1.0")
 --MSQ = LibStub("Masque", true)
@@ -156,7 +157,12 @@ function Yatabar:UpdatePopupButton(button, index, spellId, element)
 end
 
 function Yatabar:ButtonClicked(arg1)
-	if arg1 == "RightButton" and not InCombatLockdown() then 
+	if arg1 == "RightButton"  then 
+		if InCombatLockdown() then
+			print("Yatabar: ", L["function not available during combat"])
+			self:SetChecked(false)
+			return
+		end
 		if self.index ~= 1 then
 			--print(arg1, self.element, self.index)
 			local index = self.index
