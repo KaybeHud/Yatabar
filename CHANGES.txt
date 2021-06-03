@@ -1,4 +1,7 @@
 ---------------------
+- added Wrath of Air Totem
+- added message when you are infight and want to change the totem order with right click
+---------------------
 - added Totem of Wrath
 ---------------------
 - fixed missing water totem
