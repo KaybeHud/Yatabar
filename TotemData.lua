@@ -36,6 +36,7 @@ YatabarConfig.totems = {
             { id = 15107, duration = 120 }, -- windwall
             { id = 8835, duration = 120 }, -- grace of air
             { id = 25908, duration = 120 }, -- tranquil air
+            { id = 3738, duration = 120 }, -- Wrath of Air
         }
 }
 YatabarConfig.spells = {
